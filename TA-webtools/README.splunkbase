@@ -1,0 +1,83 @@
+The following is the TA-webtools details page with markdown from splunkbase:
+
+#IF YOU LIKE THIS APP, PLEASE LEAVE A RATING... TIA!!!  Please email me michael.bentley AT stage2sec.com if you have any 
+issues.  I actively support my apps and am anxious to receive any feedback. -JKat54
+Install Instructions:
+=====================
+Install app, restart splunk, profit!
+curl command:
+===============
+###Syntax:
+<code>[optional:<generating_search>] | curl uri=<uri> [optional: method=<GET|POST|DELETE> verifyssl=<TRUE|FALSE> datafield
+=<field_name> data=<data> headerfield=<json_header_field_name> user=<user> pass=<password> debug=<true|false> splunkauth
+=<true|false> timeout=<float>]
+</code>
+###Examples:
+<code>
+- GET data from uri, specifing user, pass, and very short timeout:
+| curl method=get uri=https://localhost:8089/services/admin user=admin pass=changeme timeout=0.001 | table curl*
+- GET data from uri, passing existing session key:
+| curl method=get uri=https://localhost:8089/services/admin splunkauth=true | table curl*
+- POST data to uri, specifying data="{\"name\":\"Test\",\"value\":\"Hello World\",\"severity\":\"warn\"}": 
+| makeresults count=1
+| eval data="{\"name\":\"Test\",\"value\":\"Hello World\",\"severity\":\"warn\"}" 
+| curl method=post uri=https://localhost:8089/services/messages/new splunkauth=true debug=true datafield=data 
+| table curl*
+- POST data to uri, using a data field that exists in the Splunk search pipeline: 
+| makeresults count=1 
+| eval message="{\"name\":\"restart_link\",\"value\":\"Hello World\",\"severity\":\"warn\"}" 
+| curl method=post uri=https://localhost:8089/services/messages/new datafield=message splunkauth=true 
+| table curl*
+- Deleting fired alerts for search named "Test Alert":
+| rest /servicesNS/admin/search/alerts/fired\_alerts/Test%20Alert 
+| fields title 
+| head 10 
+| map search="
+ | curl method=delete uri="https://localhost:8089/servicesNS/admin/search/alerts/fired_alerts/$title$" user=admin pass
+=changeme 
+ | table *
+ "
+- Getting search results from google:
+| curl method=get verifyssl=True uri=https://google.com/search?q=splunk debug=t 
+- Getting multiple search results from google using data in the pipe:
+| makeresults count=2 
+| eval data="q=".random() 
+| curl method=get verifyssl=false uri="https://google.com/search" datafield=data debug=true
+- Setting a Custom Header & Test Data:
+| makeresults count=1  
+| eval header="{\"content-type\":\"application/json\"}" 
+| eval data="{\"test data\":\"DATA\"}" 
+| curl method=post uri=https://localhost:8089/services user=admin pass=changeme debug=true headerfield=header datafield=data
+</code>
+testport command:
+===============
+***UDP has been removed in version 1.2.4 due to failure to pass app inspect***
+###Syntax:
+<code>| testport protocol=<tcp|udp> address=<ip> port=<port> [ Optional: count=<number_of_tests> timeout=<timeout_in_seconds> 
+]
+</code>
+###Examples:
+<code>
+- Testing if port 8000 is open on localhost
+| testport protocol=tcp address=127.0.0.1 port=8000 count=5 timeout=2
+- Send 100 UDP test messages to localhost on port 514
+| testport protocol=udp address=127.0.0.1 port=514 count=100
+</code>
+urlencode command:
+====================
+###Syntax:
+<code><generating_search> | urlencode <field_1> <field_2> <field_n> ... | table <field_1> <field_2> <field_n> ... </code>
+UPDATE
+AppInspect Tooling
+Splunk AppInspect evaluates Splunk apps against a set of Splunk-defined criteria to assess the validity and security of an app package and components.
+
+Learn More
+Are you a developer?
+As a Splunkbase app developer, you will have access to all Splunk development resources and receive a 10GB license to build an app that will help solve use cases for customers all over the world. Splunkbase has 1000+ apps and add-ons from Splunk, our partners and our community. Find an app or add-on for most any data source and user need, or simply create your own with help from our developer portal.
+
+Submit Your App
+Dev Resources
+Follow Us:
+© 2005-2020 Splunk Inc. All rights reserved.
+Sitemap | Contact | Careers | Privacy | Terms of Use | Export Control | Report a Problem
+Splunk®, Splunk>®, Listen to Your Data®, The Engine for Machine Data®, Hunk®, Splunk Cloud™, Splunk Light™, SPL™ and Splunk MINT™ are trademarks and registered trademarks of Splunk Inc. in the United States and other countries. All other brand names, product names, or trademarks belong to their respective owners.
