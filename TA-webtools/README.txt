@@ -1,4 +1,5 @@
-This is an add-on powered by the Splunk Add-on Builder.
+This is an add-on powered by the Splunk Add-on Builder and the source code can be found here:
+https://github.com/bentleymi/Splunk/tree/master/TA-webtools
 
 You can find the Splunk Add-on Builder templates available for importing the project here:
 https://github.com/bentleymi/Splunk/tree/master/AoB/ProjectExports/
