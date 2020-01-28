@@ -1,5 +1,5 @@
-### Author: Michael Camp Bentley aka JKat54 
-### Contributors: Bert Shuler, Alex Cerier
+### Author: Michael Camp Bentley aka JKat54
+### Contributors: Bert Shuler, Alex Cerier, Gareth Anderson
 ### Copyright 2019 Michael Camp Bentley
 ###
 ### Licensed under the Apache License, Version 2.0 (the "License");
@@ -123,6 +123,18 @@ def delete(uri,sessionKey,verifyssl,headers=None,payload=None,user=None,password
     except requests.exceptions.RequestException as e:
         return(getException(e,uri))
 
+def error():
+    results = None
+    stack =  traceback.format_exc()
+    e = "syntax: curl uri=<uri> " \
+    + "[ optional: method=<get | head | post | delete> verifyssl=<true | false> datafield=<field_name> "\
+    + "data=<data> user=<user> pass=<password> debug=<true | false> splunkauth=<true | false> "\
+    + "splunkpasswdname=<username_in_passwordsconf> splunkpasswdcontext=<appcontext (optional)> timeout=30 ]" \
+    + "\texample: curl method=get verifyssl=true uri=https://localhost:8089 " \
+    + 'data="TEST" user="username" pass="password" splunkauth="true"'
+    splunk.Intersplunk.generateErrorResults(str(e))
+    logger.error(str(e) + ". Traceback: " + str(stack))
+
 def execute():
     try:
 
@@ -135,15 +147,7 @@ def execute():
         # some options are required, raise error and give syntax if they are not given
         if 'uri' not in options:
             results = None
-            stack =  traceback.format_exc()
-            e = "syntax: curl uri=<uri> " \
-            + "[ optional: method=<get | head | post | delete> verifyssl=<true | false> datafield=<field_name> "\
-            + "data=<data> user=<user> pass=<password> debug=<true | false> splunkauth=<true | false> "\
-            + "timeout=30 ]" 
-            + "\texample: curl method=get verifyssl=true uri=https://localhost:8089 " \
-            + 'data="TEST" user="username" pass="password" splunkauth="true"'
-            splunk.Intersplunk.generateErrorResults(str(e))
-            logger.error(str(e) + ". Traceback: " + str(stack))
+            error()
         else:
             # default to get method if none specified
             if 'method' not in options:
@@ -184,6 +188,42 @@ def execute():
             else:
                 passwd = options['pass']
 
+            # splunkpasswdcontext variable is optional, defaults to -
+            if 'splunkpasswdcontext' not in options:
+                splunkpasswdcontext = "-"
+            else:
+                splunkpasswdcontext = options['splunkpasswdcontext']
+
+            # splunkpasswdname variable is optional, defaults to None
+            if 'splunkpasswdname' not in options:
+                splunkpasswdname = None
+            else:
+                splunkpasswdname = options['splunkpasswdname']
+                sessionKey = settings['sessionKey']
+                headers={'Authorization': 'Splunk ' + sessionKey }
+                url = "https://localhost:8089/servicesNS/-/" + splunkpasswdcontext + "/storage/passwords?output_mode=json&search=username%3D" + splunkpasswdname
+                json = requests.get(url, verify=False, headers=headers).json()
+                if len(json['messages']) != 0:
+                   if json['messages'][0]['type'] != "INFO":
+                       splunk.Intersplunk.generateErrorResults(str(json['messages']) + " occurred while querying URL: " + url)
+                       return
+                if len(json['entry']) == 0:
+                    splunk.Intersplunk.generateErrorResults("Username: " + splunkpasswdname + " not found in passwords.conf. URL: " + url)
+                    return
+
+                # At this point we did not get an error and we have zero or more results, cycle through and confirm we have a match
+                passwd = None
+                for entry in json['entry']:
+                    if entry['content']['username'] == splunkpasswdname:
+                        passwd = entry['content']['clear_password']
+                        break
+                if passwd is None:
+                    splunk.Intersplunk.generateErrorResults("Username: " + splunkpasswdname + " not found in passwords.conf. URL: " + url)
+                    return
+
+                if user is None:
+                    user = splunkpasswdname
+
             # use splunk session key / auth or not
             if 'splunkauth' not in options:
                 sessionKey = None
@@ -208,9 +248,9 @@ def execute():
                     if 'data' in options:
                         data = str(options['data'])
 
-                    # if datafield in options, set datafield = options['datafield'] 
+                    # if datafield in options, set datafield = options['datafield']
                     if 'datafield' in options:
-                        try: 
+                        try:
                             data = json.loads(result[options['datafield']])
                         except:
                             data = str(result[options['datafield']])
@@ -231,7 +271,7 @@ def execute():
                             if headers:
                                 result['curl_header'] = headers
 
-                    # based on method, execute appropriate function                    
+                    # based on method, execute appropriate function
                     if method.lower() in ("get","g"):
                         Result = get(uri,sessionKey,verifyssl,headers,data,user,passwd,timeout)
                     if method.lower() in ("head","h"):
@@ -242,7 +282,7 @@ def execute():
                         Result = put(uri,sessionKey,verifyssl,headers,data,user,passwd,timeout)
                     if method.lower() in ("delete","del","d"):
                         Result = delete(uri,sessionKey,verifyssl,headers,data,user,passwd,timeout)
-                    
+
                     # append the result to results in the splunk search pipeline
                     result['curl_status'] = Result['status']
                     result['curl_message'] = Result['message']
@@ -255,10 +295,10 @@ def execute():
                 result={}
                 results=[]
 
-                # if user specifed data manually 
+                # if user specifed data manually
                 if 'data' in options:
                     data = str(options['data'])
-                else: 
+                else:
                     data = None
 
                 # debug option
@@ -284,7 +324,7 @@ def execute():
                     Result = put(uri,sessionKey,verifyssl,None,data,user,passwd,timeout)
                 if method.lower() in ("delete","del","d"):
                     Result = delete(uri,sessionKey,verifyssl,None,data,user,passwd,timeout)
-                    
+
                 # append the result to splunk result payload
                 result['curl_status'] = Result['status']
                 result['curl_message'] = Result['message']
