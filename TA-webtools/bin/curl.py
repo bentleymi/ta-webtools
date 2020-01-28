@@ -202,18 +202,18 @@ def execute():
                 sessionKey = settings['sessionKey']
                 headers={'Authorization': 'Splunk ' + sessionKey }
                 url = "https://localhost:8089/servicesNS/-/" + splunkpasswdcontext + "/storage/passwords?output_mode=json&search=username%3D" + splunkpasswdname
-                json = requests.get(url, verify=False, headers=headers).json()
-                if len(json['messages']) != 0:
-                   if json['messages'][0]['type'] != "INFO":
-                       splunk.Intersplunk.generateErrorResults(str(json['messages']) + " occurred while querying URL: " + url)
+                json_res = requests.get(url, verify=False, headers=headers).json()
+                if len(json_res['messages']) != 0:
+                   if json_res['messages'][0]['type'] != "INFO":
+                       splunk.Intersplunk.generateErrorResults(str(json_res['messages']) + " occurred while querying URL: " + url)
                        return
-                if len(json['entry']) == 0:
+                if len(json_res['entry']) == 0:
                     splunk.Intersplunk.generateErrorResults("Username: " + splunkpasswdname + " not found in passwords.conf. URL: " + url)
                     return
 
                 # At this point we did not get an error and we have zero or more results, cycle through and confirm we have a match
                 passwd = None
-                for entry in json['entry']:
+                for entry in json_res['entry']:
                     if entry['content']['username'] == splunkpasswdname:
                         passwd = entry['content']['clear_password']
                         break
