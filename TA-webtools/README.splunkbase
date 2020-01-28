@@ -67,17 +67,3 @@ urlencode command:
 ====================
 ###Syntax:
 <code><generating_search> | urlencode <field_1> <field_2> <field_n> ... | table <field_1> <field_2> <field_n> ... </code>
-UPDATE
-AppInspect Tooling
-Splunk AppInspect evaluates Splunk apps against a set of Splunk-defined criteria to assess the validity and security of an app package and components.
-
-Learn More
-Are you a developer?
-As a Splunkbase app developer, you will have access to all Splunk development resources and receive a 10GB license to build an app that will help solve use cases for customers all over the world. Splunkbase has 1000+ apps and add-ons from Splunk, our partners and our community. Find an app or add-on for most any data source and user need, or simply create your own with help from our developer portal.
-
-Submit Your App
-Dev Resources
-Follow Us:
-© 2005-2020 Splunk Inc. All rights reserved.
-Sitemap | Contact | Careers | Privacy | Terms of Use | Export Control | Report a Problem
-Splunk®, Splunk>®, Listen to Your Data®, The Engine for Machine Data®, Hunk®, Splunk Cloud™, Splunk Light™, SPL™ and Splunk MINT™ are trademarks and registered trademarks of Splunk Inc. in the United States and other countries. All other brand names, product names, or trademarks belong to their respective owners.
