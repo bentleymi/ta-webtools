@@ -8,7 +8,7 @@ curl command:
 ===============
 
 ###Syntax:
-<code>[optional:<generating_search>] | curl uri=<uri> [optional: method=<GET|POST|DELETE> verifyssl=<TRUE|FALSE> datafield=<field_name> data=<data> headerfield=<json_header_field_name> user=<user> pass=<password> debug=<true|false> splunkauth=<true|false> timeout=<float>]
+<code>[optional:<generating_search>] | curl uri=<uri> [optional: method=<GET|POST|DELETE> verifyssl=<TRUE|FALSE> datafield=<field_name> data=<data> headerfield=<json_header_field_name> user=<user> pass=<password> debug=<true|false> splunkauth=<true|false> splunkpasswdname=<username_in_passwordsconf> splunkpasswdcontext=<appcontext (optional)> timeout=<float>]
 </code>
 
 ###Examples:
@@ -63,6 +63,8 @@ curl command:
 | eval data="{\"test data\":\"DATA\"}" 
 | curl method=post uri=https://localhost:8089/services user=admin pass=changeme debug=true headerfield=header datafield=data
 
+- Call localhost but retrieve the password from the password store for username example (the real password is never mentioned in this command)
+| curl method=get uri=https://localhost:8089/services user=example splunkpasswdname=example
 </code>
 
 testport command:
