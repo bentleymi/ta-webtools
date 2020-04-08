@@ -126,12 +126,10 @@ def delete(uri,sessionKey,verifyssl,headers=None,payload=None,user=None,password
 def error():
     results = None
     stack =  traceback.format_exc()
-    e = "syntax: curl uri=<uri> " \
-    + "[ optional: method=<get | head | post | delete> verifyssl=<true | false> datafield=<field_name> "\
+    e = "syntax: | curl [ choice: uri=<uri> OR urifield=<urifield> ] " \
+    + "[ optional: method=<get | head | post | delete> verifyssl=<true | false> datafield=<datafield> "\
     + "data=<data> user=<user> pass=<password> debug=<true | false> splunkauth=<true | false> "\
-    + "splunkpasswdname=<username_in_passwordsconf> splunkpasswdcontext=<appcontext (optional)> timeout=30 ]" \
-    + "\texample: curl method=get verifyssl=true uri=https://localhost:8089 " \
-    + 'data="TEST" user="username" pass="password" splunkauth="true"'
+    + "splunkpasswdname=<username_in_passwordsconf> splunkpasswdcontext=<appcontext> timeout=<float> ]" 
     splunk.Intersplunk.generateErrorResults(str(e))
     logger.error(str(e) + ". Traceback: " + str(stack))
 
@@ -145,7 +143,7 @@ def execute():
         results,dummyresults,settings = splunk.Intersplunk.getOrganizedResults()
 
         # some options are required, raise error and give syntax if they are not given
-        if 'uri' not in options:
+        if 'uri' not in options and 'urifield' not in options:
             results = None
             error()
         else:
@@ -161,8 +159,11 @@ def execute():
             else:
                 timeout = 60
 
-            # uri must be provided else you couldnt make it here, so then get the URI from the options provided
-            uri = str(options['uri'])
+            # default uri to None
+            if 'uri' in options:
+                uri = str(options['uri'])
+            else:
+                uri = None
 
             # verifyssl variable is required, so if not specified, it should = False
             if 'verifyssl' not in options:
@@ -238,6 +239,10 @@ def execute():
             # STREAMING Use Case: iterate through results and run curl commands
             if len(results) > 0:
                 for result in results:
+                    # use urifield if providede
+                    if 'urifield' in options:
+                        uri = result[options['urifield']]
+
                     # use JSON encoded header string if provided
                     if 'headerfield' in options:
                         headers = json.loads(result[options['headerfield']])
