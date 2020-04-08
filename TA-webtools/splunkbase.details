@@ -9,7 +9,7 @@ curl command:
 ===============
 
 ###Syntax:
-<code>[optional:<generating_search>] | curl uri=<uri> [optional: method=<GET|POST|DELETE> verifyssl=<TRUE|FALSE> datafield=<field_name> data=<data> headerfield=<json_header_field_name> user=<user> pass=<password> debug=<true|false> splunkauth=<true|false> splunkpasswdname=<username_in_passwordsconf> splunkpasswdcontext=<appcontext (optional)> timeout=<float>]
+<code>[optional:<generating_search>] | curl [choice: uri=<uri> OR urifield=<urifield> [optional: method=<GET|POST|DELETE> verifyssl=<TRUE|FALSE> datafield=<field_name> data=<data> headerfield=<json_header_field_name> user=<user> pass=<password> debug=<true|false> splunkauth=<true|false> splunkpasswdname=<username_in_passwordsconf> splunkpasswdcontext=<appcontext> timeout=<float>]
 </code>
 
 ###Examples:
