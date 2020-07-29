@@ -64,8 +64,15 @@ curl command:
 | eval data="{\"test data\":\"DATA\"}" 
 | curl method=post uri=https://localhost:8089/services user=admin pass=changeme debug=true headerfield=header datafield=data
 
+
 - Call localhost but retrieve the password from the password store for username example (requires https://splunkbase.splunk.com/app/4013/)
 | curl method=get uri=https://localhost:8089/services user=example splunkpasswdname=example
+
+
+- Using the urifield option
+| makeresults count=1  
+| eval uri="https://localhost:8089/services" 
+| curl method=get urifield=uri 
 
 </code>
 
