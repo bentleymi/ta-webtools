@@ -22,6 +22,7 @@ import json
 import requests
 import splunk.Intersplunk
 import splunk.mining.dcutils as dcu
+import time
 import traceback
 
 logger = dcu.getLogger()
@@ -231,8 +232,22 @@ def execute():
 
             # STREAMING Use Case: iterate through results and run curl commands
             if len(results) > 0:
+                #https://github.com/bentleymi/ta-webtools/issues/4$
+                #use sleep if provided sleep the defined amount after the first iteration$
+                sleepCounter=0
+
                 for result in results:
-                    # use urifield if providede
+                    #https://github.com/bentleymi/ta-webtools/issues/4
+                    #use sleep if provided sleep the defined amount after the first iteration
+                    if 'sleep' in options:
+                        sleep=int(options['sleep'])
+                        if sleepCounter>0:
+                            time.sleep(sleep)
+                        sleepCounter=sleepCounter+1
+                    else:
+                        sleep=None
+
+                    # use urifield if provided
                     if 'urifield' in options:
                         uri = result[options['urifield']]
 
@@ -268,6 +283,8 @@ def execute():
                                 result['curl_data_payload'] = data
                             if headers:
                                 result['curl_header'] = headers
+                            if sleep:
+                                result['curl_sleep'] = sleep
 
                     # based on method, execute appropriate function
                     if method.lower() in ("get","g"):
