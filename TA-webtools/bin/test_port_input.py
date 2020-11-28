@@ -1,18 +1,13 @@
 import ta_webtools_declare
-
 import os
 import sys
 import time
 import datetime
 import json
-
 import modinput_wrapper.base_modinput
 from solnlib.packages.splunklib import modularinput as smi
-
-
-
 import input_module_test_port_input as input_module
-
+from io import open
 bin_dir = os.path.basename(__file__)
 
 '''
@@ -47,7 +42,7 @@ class ModInputtest_port_input(modinput_wrapper.base_modinput.BaseModInput):
         For other input types, arguments should be get from input_module. Defining new input types could be easier.
         """
         scheme.add_argument(smi.Argument("protocol", title="Protocol",
-                                         description="",
+                                         description="UDP is deprecated but left here for backwards compatibility",
                                          required_on_create=True,
                                          required_on_edit=False))
         scheme.add_argument(smi.Argument("address", title="Address",
@@ -59,7 +54,7 @@ class ModInputtest_port_input(modinput_wrapper.base_modinput.BaseModInput):
                                          required_on_create=True,
                                          required_on_edit=False))
         scheme.add_argument(smi.Argument("count", title="Count",
-                                         description="Applicable only to UDP protocol",
+                                         description="",
                                          required_on_create=False,
                                          required_on_edit=False))
         scheme.add_argument(smi.Argument("timeout", title="Timeout",

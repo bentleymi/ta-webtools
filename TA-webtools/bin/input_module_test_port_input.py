@@ -3,6 +3,7 @@
 
 import socket
 import json
+from six.moves import range
 '''
     IMPORTANT
     Edit only the validate_input and collect_events functions.

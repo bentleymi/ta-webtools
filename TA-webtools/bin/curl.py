@@ -1,6 +1,6 @@
 ### Author: Michael Camp Bentley aka JKat54
 ### Contributors: Bert Shuler, Alex Cerier, Gareth Anderson
-### Copyright 2019 Michael Camp Bentley
+### Copyright 2017 Michael Camp Bentley
 ###
 ### Licensed under the Apache License, Version 2.0 (the "License");
 ### you may not use this file except in compliance with the License.
@@ -23,24 +23,15 @@ import requests
 import splunk.Intersplunk
 import splunk.mining.dcutils as dcu
 import traceback
-import sys
-import re
 
 logger = dcu.getLogger()
 
 def getResponse(r,uri):
-    if r.status_code <= 399:
-        response = {}
-        response['status'] = r.status_code
-        response['message'] = r.text
-        response['url'] = r.url
-        return(response)
-    else:
-        response = {}
-        response['status'] = r.status_code
-        response['message'] = r.text
-        response['url'] = r.url
-        return(response)
+    response = {}
+    response['status'] = r.status_code
+    response['message'] = r.text
+    response['url'] = r.url
+    return(response)
 
 def getException(e,uri):
     response = {}
@@ -131,26 +122,15 @@ def error():
     e = "syntax: | curl [ choice: uri=<uri> OR urifield=<urifield> ] " \
     + "[ optional: method=<get | head | post | delete> verifyssl=<true | false> datafield=<datafield> "\
     + "data=<data> user=<user> pass=<password> debug=<true | false> splunkauth=<true | false> "\
-    + "splunkpasswdname=<username_in_passwordsconf> splunkpasswdcontext=<appcontext> timeout=<float> ]" 
+    + "splunkpasswdname=<username_in_passwordsconf> splunkpasswdcontext=<appcontext> timeout=<float> ]"
     splunk.Intersplunk.generateErrorResults(str(e))
     logger.error(str(e) + ". Traceback: " + str(stack))
 
 def execute():
     try:
-        # get the keywords suplied to the curl command
-        argv = splunk.Intersplunk.win32_utf8_argv() or sys.argv
 
-        # for each arg
-        first = True
-        options = {}
-        pattern=re.compile("^\s*([^=]+)=(.*)")
-        for arg in argv:
-            if first:
-                first = False
-                continue
-            else:
-                result = pattern.match(arg)
-                options[result.group(1)] = result.group(2)
+        # get the keywords suplied to the curl command
+        keywords, options = splunk.Intersplunk.getKeywordsAndOptions()
 
         # get the previous search results
         results,dummyresults,settings = splunk.Intersplunk.getOrganizedResults()
@@ -214,9 +194,9 @@ def execute():
             else:
                 splunkpasswdname = options['splunkpasswdname']
                 sessionKey = settings['sessionKey']
-                auth_headers={'Authorization': 'Splunk ' + sessionKey }
+                headers={'Authorization': 'Splunk ' + sessionKey }
                 url = "https://localhost:8089/servicesNS/-/" + splunkpasswdcontext + "/storage/passwords?output_mode=json&search=username%3D" + splunkpasswdname
-                json_res = requests.get(url, verify=False, headers=auth_headers).json()
+                json_res = requests.get(url, verify=False, headers=headers).json()
                 if len(json_res['messages']) != 0:
                    if json_res['messages'][0]['type'] != "INFO":
                        splunk.Intersplunk.generateErrorResults(str(json_res['messages']) + " occurred while querying URL: " + url)
@@ -249,11 +229,6 @@ def execute():
                 else:
                     sessionKey = None
 
-            if 'headers' in options:
-                headers = json.loads(options['headers'])
-            else:
-                headers = None
-
             # STREAMING Use Case: iterate through results and run curl commands
             if len(results) > 0:
                 for result in results:
@@ -262,8 +237,10 @@ def execute():
                         uri = result[options['urifield']]
 
                     # use JSON encoded header string if provided
-                    if not headers and 'headerfield' in options:
+                    if 'headerfield' in options:
                         headers = json.loads(result[options['headerfield']])
+                    else:
+                        headers = None
 
                     # if data in options, set data = options['data']
                     if 'data' in options:
@@ -310,6 +287,7 @@ def execute():
                     result['curl_response_url'] = Result['url']
 
             # NON-STREAMING Use Case: do not iterate through results, just run curl command
+            # this mode doesnt support headers
             else:
                 # build splunk result payload
                 result={}
@@ -332,20 +310,18 @@ def execute():
                         result['curl_splunkauth'] = splunkauth
                         if data!=None:
                             result['curl_data_payload'] = data
-                        if headers:
-                            result['curl_header'] = headers
 
                 # based on method, esecute appropriate function
                 if method.lower() in ("get","g"):
-                    Result = get(uri,sessionKey,verifyssl,headers,data,user,passwd,timeout)
+                    Result = get(uri,sessionKey,verifyssl,None,data,user,passwd,timeout)
                 if method.lower() in ("head","h"):
-                    Result = head(uri,sessionKey,verifyssl,headers,data,user,passwd,timeout)
+                    Result = head(uri,sessionKey,verifyssl,None,data,user,passwd,timeout)
                 if method.lower() in ("post","p"):
-                    Result = post(uri,sessionKey,verifyssl,headers,data,user,passwd,timeout)
+                    Result = post(uri,sessionKey,verifyssl,None,data,user,passwd,timeout)
                 if method.lower() in ("put"):
-                    Result = put(uri,sessionKey,verifyssl,headers,data,user,passwd,timeout)
+                    Result = put(uri,sessionKey,verifyssl,None,data,user,passwd,timeout)
                 if method.lower() in ("delete","del","d"):
-                    Result = delete(uri,sessionKey,verifyssl,headers,data,user,passwd,timeout)
+                    Result = delete(uri,sessionKey,verifyssl,None,data,user,passwd,timeout)
 
                 # append the result to splunk result payload
                 result['curl_status'] = Result['status']
@@ -356,7 +332,7 @@ def execute():
         #output results
         splunk.Intersplunk.outputResults(results)
 
-    except Exception, e:
+    except Exception as e:
         stack =  traceback.format_exc()
         splunk.Intersplunk.generateErrorResults(str(e))
         logger.error(str(e) + ". Traceback: " + str(stack))
