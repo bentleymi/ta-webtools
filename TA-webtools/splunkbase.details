@@ -1,4 +1,4 @@
-#IF YOU LIKE THIS APP, PLEASE LEAVE A RATING... TIA!!!  Please email me michael.bentley AT stage2sec.com if you have any issues.  I actively support my apps and am anxious to receive any feedback. -JKat54
+#IF YOU LIKE THIS APP, PLEASE LEAVE A RATING... TIA!!!  Please tag me @jkat54 on community.splunk.com or call 1-844-4SPLUNK if you have any issues.  I actively support my apps and am anxious to receive any feedback. -JKat54
 
 Install Instructions:
 =====================
@@ -9,9 +9,8 @@ curl command:
 ===============
 
 ###Syntax:
-<code>[optional:<generating_search>] | curl [choice: uri=<uri> OR urifield=<urifield>] [optional: method=<GET|POST|DELETE> verifyssl=<TRUE|FALSE> datafield=<field_name> data=<data> headerfield=<json_header_field_name> user=<user> pass=<password> debug=<true|false> splunkauth=<true|false> splunkpasswdname=<username_in_passwordsconf> splunkpasswdcontext=<appcontext> timeout=<float>]
+<code>[optional:<generating_search>] | curl [choice: uri=uri OR urifield=urifield] [optional: method=<GET|POST|DELETE verifyssl="/path/to/ca.pem"|"TRUE"|"FALSE" clientcert="/path/to/client/cert.pem" certkey="/path/to/client/cert.key" datafield=field_name data="data" headerfield=json_header_field_name user="user" pass="password" debug=true|false splunkauth=true|false splunkpasswdname="username_in_passwordsconf" splunkpasswdcontext="appcontext" timeout=float slee=timeInSecsBetweenCurls]
 </code>
-
 ###Examples:
 
 <code>
@@ -64,8 +63,15 @@ curl command:
 | eval data="{\"test data\":\"DATA\"}" 
 | curl method=post uri=https://localhost:8089/services user=admin pass=changeme debug=true headerfield=header datafield=data
 
+
 - Call localhost but retrieve the password from the password store for username example (requires https://splunkbase.splunk.com/app/4013/)
 | curl method=get uri=https://localhost:8089/services user=example splunkpasswdname=example
+
+
+- Using the urifield option
+| makeresults count=1  
+| eval uri="https://localhost:8089/services" 
+| curl method=get urifield=uri 
 
 </code>
 

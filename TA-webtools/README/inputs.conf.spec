@@ -1,8 +1,8 @@
 [test_port_input://<name>]
-protocol = 
+protocol = UDP is deprecated but left here for backwards compatibility
 address = 
 port = 
-count = Applicable only to UDP protocol
+count = 
 timeout = 
 
 [curl_inputs://<name>]

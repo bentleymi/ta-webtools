@@ -1,486 +1,488 @@
 {
     "meta": {
-        "restRoot": "TA_webtools", 
-        "apiVersion": "3.0.0", 
-        "name": "TA-webtools", 
-        "displayName": "Webtools", 
-        "version": "1.0.0"
-    }, 
+        "name": "TA-webtools",
+        "displayName": "Webtools",
+        "version": "2.0.0",
+        "apiVersion": "3.0.0",
+        "restRoot": "TA_webtools"
+    },
     "pages": {
-        "inputs": {
-            "description": "Manage your data inputs", 
-            "services": [
+        "configuration": {
+            "title": "Configuration",
+            "description": "Set up your add-on",
+            "tabs": [
                 {
-                    "name": "test_port_input", 
+                    "name": "logging",
+                    "title": "Logging",
                     "entity": [
                         {
-                            "validators": [
-                                {
-                                    "pattern": "^[a-zA-Z]\\w*$", 
-                                    "type": "regex", 
-                                    "errorMsg": "Input Name must start with a letter and followed by alphabetic letters, digits or underscores."
-                                }, 
-                                {
-                                    "minLength": 1, 
-                                    "type": "string", 
-                                    "errorMsg": "Length of input name should be between 1 and 100", 
-                                    "maxLength": 100
-                                }
-                            ], 
-                            "type": "text", 
-                            "label": "Name", 
-                            "field": "name", 
-                            "help": "Enter a unique name for the data input", 
-                            "required": true
-                        }, 
+                            "field": "loglevel",
+                            "label": "Log level",
+                            "type": "singleSelect",
+                            "options": {
+                                "disableSearch": true,
+                                "autoCompleteFields": [
+                                    {
+                                        "label": "DEBUG",
+                                        "value": "DEBUG"
+                                    },
+                                    {
+                                        "label": "INFO",
+                                        "value": "INFO"
+                                    },
+                                    {
+                                        "label": "WARNING",
+                                        "value": "WARNING"
+                                    },
+                                    {
+                                        "label": "ERROR",
+                                        "value": "ERROR"
+                                    },
+                                    {
+                                        "label": "CRITICAL",
+                                        "value": "CRITICAL"
+                                    }
+                                ]
+                            },
+                            "defaultValue": "INFO"
+                        }
+                    ]
+                }
+            ]
+        },
+        "inputs": {
+            "title": "Inputs",
+            "description": "Manage your data inputs",
+            "table": {
+                "header": [
+                    {
+                        "field": "name",
+                        "label": "Name"
+                    },
+                    {
+                        "field": "interval",
+                        "label": "Interval"
+                    },
+                    {
+                        "field": "index",
+                        "label": "Index"
+                    },
+                    {
+                        "field": "disabled",
+                        "label": "Status"
+                    }
+                ],
+                "moreInfo": [
+                    {
+                        "field": "name",
+                        "label": "Name"
+                    },
+                    {
+                        "field": "interval",
+                        "label": "Interval"
+                    },
+                    {
+                        "field": "index",
+                        "label": "Index"
+                    },
+                    {
+                        "field": "disabled",
+                        "label": "Status"
+                    },
+                    {
+                        "field": "protocol",
+                        "label": "Protocol"
+                    },
+                    {
+                        "field": "address",
+                        "label": "Address"
+                    },
+                    {
+                        "field": "port",
+                        "label": "Port"
+                    },
+                    {
+                        "field": "count",
+                        "label": "Count"
+                    },
+                    {
+                        "field": "timeout",
+                        "label": "Timeout"
+                    },
+                    {
+                        "field": "http_method",
+                        "label": "HTTP Method"
+                    },
+                    {
+                        "field": "uri",
+                        "label": "URI"
+                    },
+                    {
+                        "field": "verify_ssl",
+                        "label": "Verify SSL"
+                    },
+                    {
+                        "field": "request_headers",
+                        "label": "Request Headers"
+                    },
+                    {
+                        "field": "payload",
+                        "label": "Payload"
+                    },
+                    {
+                        "field": "username",
+                        "label": "Username"
+                    },
+                    {
+                        "field": "password",
+                        "label": "Password"
+                    }
+                ],
+                "actions": [
+                    "edit",
+                    "enable",
+                    "delete",
+                    "clone"
+                ]
+            },
+            "services": [
+                {
+                    "name": "test_port_input",
+                    "title": "Test Port Input",
+                    "entity": [
                         {
+                            "field": "name",
+                            "label": "Name",
+                            "type": "text",
+                            "help": "Enter a unique name for the data input",
+                            "required": true,
                             "validators": [
                                 {
-                                    "pattern": "^\\-[1-9]\\d*$|^\\d*$", 
-                                    "type": "regex", 
+                                    "type": "regex",
+                                    "pattern": "^[a-zA-Z]\\w*$",
+                                    "errorMsg": "Input Name must start with a letter and followed by alphabetic letters, digits or underscores."
+                                },
+                                {
+                                    "type": "string",
+                                    "minLength": 1,
+                                    "maxLength": 100,
+                                    "errorMsg": "Length of input name should be between 1 and 100"
+                                }
+                            ]
+                        },
+                        {
+                            "field": "interval",
+                            "label": "Interval",
+                            "type": "text",
+                            "required": true,
+                            "help": "Time interval of input in seconds.",
+                            "validators": [
+                                {
+                                    "type": "regex",
+                                    "pattern": "^\\-[1-9]\\d*$|^\\d*$",
                                     "errorMsg": "Interval must be an integer."
                                 }
-                            ], 
-                            "type": "text", 
-                            "label": "Interval", 
-                            "field": "interval", 
-                            "help": "Time interval of input in seconds.", 
-                            "required": true
-                        }, 
+                            ]
+                        },
                         {
+                            "field": "index",
+                            "label": "Index",
+                            "type": "singleSelect",
+                            "defaultValue": "default",
+                            "options": {
+                                "endpointUrl": "data/indexes",
+                                "blackList": "^_.*$",
+                                "createSearchChoice": true
+                            },
+                            "required": true,
                             "validators": [
                                 {
-                                    "minLength": 1, 
-                                    "type": "string", 
-                                    "errorMsg": "Length of index name should be between 1 and 80.", 
-                                    "maxLength": 80
+                                    "type": "string",
+                                    "minLength": 1,
+                                    "maxLength": 80,
+                                    "errorMsg": "Length of index name should be between 1 and 80."
                                 }
-                            ], 
-                            "type": "singleSelect", 
-                            "label": "Index", 
-                            "defaultValue": "default", 
-                            "field": "index", 
-                            "required": true, 
-                            "options": {
-                                "endpointUrl": "data/indexes", 
-                                "blackList": "^_.*$", 
-                                "createSearchChoice": true
-                            }
-                        }, 
+                            ]
+                        },
                         {
-                            "type": "radio", 
-                            "label": "Protocol", 
-                            "defaultValue": "1", 
-                            "field": "protocol", 
-                            "help": "", 
-                            "required": true, 
+                            "field": "protocol",
+                            "label": "Protocol",
+                            "help": "UDP is deprecated but left here for backwards compatibility",
+                            "required": true,
+                            "type": "radio",
+                            "defaultValue": "1",
                             "options": {
                                 "items": [
                                     {
-                                        "value": "1", 
+                                        "value": "1",
                                         "label": "TCP"
-                                    }, 
+                                    },
                                     {
-                                        "value": "0", 
+                                        "value": "0",
                                         "label": "UDP"
                                     }
                                 ]
                             }
-                        }, 
+                        },
                         {
+                            "field": "address",
+                            "label": "Address",
+                            "help": "",
+                            "required": true,
+                            "type": "text",
+                            "defaultValue": "127.0.0.1",
                             "validators": [
                                 {
-                                    "minLength": 0, 
-                                    "type": "string", 
-                                    "errorMsg": "Max length of text input is 8192", 
-                                    "maxLength": 8192
+                                    "type": "string",
+                                    "minLength": 0,
+                                    "maxLength": 8192,
+                                    "errorMsg": "Max length of text input is 8192"
                                 }
-                            ], 
-                            "type": "text", 
-                            "label": "Address", 
-                            "defaultValue": "127.0.0.1", 
-                            "field": "address", 
-                            "help": "", 
-                            "required": true
-                        }, 
+                            ]
+                        },
                         {
+                            "field": "port",
+                            "label": "Port",
+                            "help": "",
+                            "required": true,
+                            "type": "text",
+                            "defaultValue": "8000",
                             "validators": [
                                 {
-                                    "minLength": 0, 
-                                    "type": "string", 
-                                    "errorMsg": "Max length of text input is 8192", 
-                                    "maxLength": 8192
+                                    "type": "string",
+                                    "minLength": 0,
+                                    "maxLength": 8192,
+                                    "errorMsg": "Max length of text input is 8192"
                                 }
-                            ], 
-                            "type": "text", 
-                            "label": "Port", 
-                            "defaultValue": "8000", 
-                            "field": "port", 
-                            "help": "", 
-                            "required": true
-                        }, 
+                            ]
+                        },
                         {
+                            "field": "count",
+                            "label": "Count",
+                            "help": "",
+                            "required": false,
+                            "type": "text",
+                            "defaultValue": "1",
                             "validators": [
                                 {
-                                    "minLength": 0, 
-                                    "type": "string", 
-                                    "errorMsg": "Max length of text input is 8192", 
-                                    "maxLength": 8192
+                                    "type": "string",
+                                    "minLength": 0,
+                                    "maxLength": 8192,
+                                    "errorMsg": "Max length of text input is 8192"
                                 }
-                            ], 
-                            "type": "text", 
-                            "label": "Count", 
-                            "defaultValue": "1", 
-                            "field": "count", 
-                            "help": "Applicable only to UDP protocol", 
-                            "required": false
-                        }, 
+                            ]
+                        },
                         {
+                            "field": "timeout",
+                            "label": "Timeout",
+                            "help": "",
+                            "required": false,
+                            "type": "text",
+                            "defaultValue": "60",
                             "validators": [
                                 {
-                                    "minLength": 0, 
-                                    "type": "string", 
-                                    "errorMsg": "Max length of text input is 8192", 
-                                    "maxLength": 8192
+                                    "type": "string",
+                                    "minLength": 0,
+                                    "maxLength": 8192,
+                                    "errorMsg": "Max length of text input is 8192"
                                 }
-                            ], 
-                            "type": "text", 
-                            "label": "Timeout", 
-                            "defaultValue": "2", 
-                            "field": "timeout", 
-                            "help": "", 
-                            "required": false
+                            ]
                         }
-                    ], 
-                    "title": "Test Port Input"
-                }, 
+                    ]
+                },
                 {
-                    "name": "curl_inputs", 
+                    "name": "curl_inputs",
+                    "title": "Curl Inputs",
                     "entity": [
                         {
+                            "field": "name",
+                            "label": "Name",
+                            "type": "text",
+                            "help": "Enter a unique name for the data input",
+                            "required": true,
                             "validators": [
                                 {
-                                    "pattern": "^[a-zA-Z]\\w*$", 
-                                    "type": "regex", 
+                                    "type": "regex",
+                                    "pattern": "^[a-zA-Z]\\w*$",
                                     "errorMsg": "Input Name must start with a letter and followed by alphabetic letters, digits or underscores."
-                                }, 
+                                },
                                 {
-                                    "minLength": 1, 
-                                    "type": "string", 
-                                    "errorMsg": "Length of input name should be between 1 and 100", 
-                                    "maxLength": 100
+                                    "type": "string",
+                                    "minLength": 1,
+                                    "maxLength": 100,
+                                    "errorMsg": "Length of input name should be between 1 and 100"
                                 }
-                            ], 
-                            "type": "text", 
-                            "label": "Name", 
-                            "field": "name", 
-                            "help": "Enter a unique name for the data input", 
-                            "required": true
-                        }, 
+                            ]
+                        },
                         {
+                            "field": "interval",
+                            "label": "Interval",
+                            "type": "text",
+                            "required": true,
+                            "help": "Time interval of input in seconds.",
                             "validators": [
                                 {
-                                    "pattern": "^\\-[1-9]\\d*$|^\\d*$", 
-                                    "type": "regex", 
+                                    "type": "regex",
+                                    "pattern": "^\\-[1-9]\\d*$|^\\d*$",
                                     "errorMsg": "Interval must be an integer."
                                 }
-                            ], 
-                            "type": "text", 
-                            "label": "Interval", 
-                            "field": "interval", 
-                            "help": "Time interval of input in seconds.", 
-                            "required": true
-                        }, 
+                            ]
+                        },
                         {
+                            "field": "index",
+                            "label": "Index",
+                            "type": "singleSelect",
+                            "defaultValue": "default",
+                            "options": {
+                                "endpointUrl": "data/indexes",
+                                "blackList": "^_.*$",
+                                "createSearchChoice": true
+                            },
+                            "required": true,
                             "validators": [
                                 {
-                                    "minLength": 1, 
-                                    "type": "string", 
-                                    "errorMsg": "Length of index name should be between 1 and 80.", 
-                                    "maxLength": 80
+                                    "type": "string",
+                                    "minLength": 1,
+                                    "maxLength": 80,
+                                    "errorMsg": "Length of index name should be between 1 and 80."
                                 }
-                            ], 
-                            "type": "singleSelect", 
-                            "label": "Index", 
-                            "defaultValue": "default", 
-                            "field": "index", 
-                            "required": true, 
-                            "options": {
-                                "endpointUrl": "data/indexes", 
-                                "blackList": "^_.*$", 
-                                "createSearchChoice": true
-                            }
-                        }, 
+                            ]
+                        },
                         {
-                            "type": "radio", 
-                            "label": "HTTP Method", 
-                            "defaultValue": "get", 
-                            "field": "http_method", 
-                            "help": "", 
-                            "required": true, 
+                            "field": "http_method",
+                            "label": "HTTP Method",
+                            "help": "",
+                            "required": true,
+                            "type": "radio",
+                            "defaultValue": "get",
                             "options": {
                                 "items": [
                                     {
-                                        "value": "get", 
+                                        "value": "get",
                                         "label": "Get"
-                                    }, 
+                                    },
                                     {
-                                        "value": "post", 
+                                        "value": "post",
                                         "label": "Post"
-                                    }, 
+                                    },
                                     {
-                                        "value": "delete", 
+                                        "value": "delete",
                                         "label": "Delete"
                                     }
                                 ]
                             }
-                        }, 
+                        },
                         {
+                            "field": "uri",
+                            "label": "URI",
+                            "help": "",
+                            "required": true,
+                            "type": "text",
                             "validators": [
                                 {
-                                    "minLength": 0, 
-                                    "type": "string", 
-                                    "errorMsg": "Max length of text input is 8192", 
-                                    "maxLength": 8192
+                                    "type": "string",
+                                    "minLength": 0,
+                                    "maxLength": 8192,
+                                    "errorMsg": "Max length of text input is 8192"
                                 }
-                            ], 
-                            "type": "text", 
-                            "label": "URI", 
-                            "defaultValue": "https://localhost:8089", 
-                            "field": "uri", 
-                            "help": "", 
-                            "required": true
-                        }, 
+                            ],
+                            "options": {
+                                "placeholder": "https://localhost:8089/services"
+                            }
+                        },
                         {
-                            "type": "radio", 
-                            "label": "Verify SSL", 
-                            "defaultValue": "0", 
-                            "field": "verify_ssl", 
-                            "help": "", 
-                            "required": false, 
+                            "field": "verify_ssl",
+                            "label": "Verify SSL",
+                            "help": "",
+                            "required": false,
+                            "type": "radio",
+                            "defaultValue": "0",
                             "options": {
                                 "items": [
                                     {
-                                        "value": "1", 
+                                        "value": "1",
                                         "label": "True"
-                                    }, 
+                                    },
                                     {
-                                        "value": "0", 
+                                        "value": "0",
                                         "label": "False"
                                     }
                                 ]
                             }
-                        }, 
+                        },
                         {
+                            "field": "request_headers",
+                            "label": "Request Headers",
+                            "help": "JSON formated HTTP Headers",
+                            "required": false,
+                            "type": "text",
                             "validators": [
                                 {
-                                    "minLength": 0, 
-                                    "type": "string", 
-                                    "errorMsg": "Max length of text input is 8192", 
-                                    "maxLength": 8192
+                                    "type": "string",
+                                    "minLength": 0,
+                                    "maxLength": 8192,
+                                    "errorMsg": "Max length of text input is 8192"
                                 }
-                            ], 
-                            "type": "text", 
-                            "label": "Request Headers", 
-                            "field": "request_headers", 
-                            "help": "JSON formated HTTP Headers", 
-                            "required": false, 
+                            ],
                             "options": {
                                 "placeholder": "{\"Content-Type\": \"application/json\", \"user-agent\":\"my-app/0.0.1\"}"
                             }
-                        }, 
+                        },
                         {
+                            "field": "payload",
+                            "label": "Payload",
+                            "help": "JSON formated payload to send with the request.",
+                            "required": false,
+                            "type": "text",
                             "validators": [
                                 {
-                                    "minLength": 0, 
-                                    "type": "string", 
-                                    "errorMsg": "Max length of text input is 8192", 
-                                    "maxLength": 8192
+                                    "type": "string",
+                                    "minLength": 0,
+                                    "maxLength": 8192,
+                                    "errorMsg": "Max length of text input is 8192"
                                 }
-                            ], 
-                            "type": "text", 
-                            "label": "Payload", 
-                            "field": "payload", 
-                            "help": "JSON formated payload to send with the request.", 
-                            "required": false, 
+                            ],
                             "options": {
                                 "placeholder": "{\"foo\":\"bar\"}"
                             }
-                        }, 
+                        },
                         {
+                            "field": "username",
+                            "label": "Username",
+                            "help": "",
+                            "required": false,
+                            "type": "text",
                             "validators": [
                                 {
-                                    "minLength": 0, 
-                                    "type": "string", 
-                                    "errorMsg": "Max length of text input is 8192", 
-                                    "maxLength": 8192
+                                    "type": "string",
+                                    "minLength": 0,
+                                    "maxLength": 8192,
+                                    "errorMsg": "Max length of text input is 8192"
                                 }
-                            ], 
-                            "type": "text", 
-                            "label": "Username", 
-                            "field": "username", 
-                            "help": "", 
-                            "required": false
-                        }, 
+                            ]
+                        },
                         {
+                            "field": "password",
+                            "label": "Password",
+                            "help": "",
+                            "required": false,
+                            "type": "text",
+                            "encrypted": true,
                             "validators": [
                                 {
-                                    "minLength": 0, 
-                                    "type": "string", 
-                                    "errorMsg": "Max length of password is 8192", 
-                                    "maxLength": 8192
+                                    "type": "string",
+                                    "minLength": 0,
+                                    "maxLength": 8192,
+                                    "errorMsg": "Max length of password is 8192"
                                 }
-                            ], 
-                            "type": "text", 
-                            "label": "Password", 
+                            ],
                             "options": {
                                 "placeholder": "******"
-                            }, 
-                            "field": "password", 
-                            "help": "", 
-                            "required": false, 
-                            "encrypted": true
-                        }
-                    ], 
-                    "title": "Curl Inputs"
-                }
-            ], 
-            "title": "Inputs", 
-            "table": {
-                "actions": [
-                    "edit", 
-                    "enable", 
-                    "delete", 
-                    "clone"
-                ], 
-                "moreInfo": [
-                    {
-                        "label": "Name", 
-                        "field": "name"
-                    }, 
-                    {
-                        "label": "Interval", 
-                        "field": "interval"
-                    }, 
-                    {
-                        "label": "Index", 
-                        "field": "index"
-                    }, 
-                    {
-                        "label": "Status", 
-                        "field": "disabled"
-                    }, 
-                    {
-                        "label": "Protocol", 
-                        "field": "protocol"
-                    }, 
-                    {
-                        "label": "Address", 
-                        "field": "address"
-                    }, 
-                    {
-                        "label": "Port", 
-                        "field": "port"
-                    }, 
-                    {
-                        "label": "Count", 
-                        "field": "count"
-                    }, 
-                    {
-                        "label": "Timeout", 
-                        "field": "timeout"
-                    }, 
-                    {
-                        "label": "HTTP Method", 
-                        "field": "http_method"
-                    }, 
-                    {
-                        "label": "URI", 
-                        "field": "uri"
-                    }, 
-                    {
-                        "label": "Verify SSL", 
-                        "field": "verify_ssl"
-                    }, 
-                    {
-                        "label": "Request Headers", 
-                        "field": "request_headers"
-                    }, 
-                    {
-                        "label": "Payload", 
-                        "field": "payload"
-                    }, 
-                    {
-                        "label": "Username", 
-                        "field": "username"
-                    }, 
-                    {
-                        "label": "Password", 
-                        "field": "password"
-                    }
-                ], 
-                "header": [
-                    {
-                        "label": "Name", 
-                        "field": "name"
-                    }, 
-                    {
-                        "label": "Interval", 
-                        "field": "interval"
-                    }, 
-                    {
-                        "label": "Index", 
-                        "field": "index"
-                    }, 
-                    {
-                        "label": "Status", 
-                        "field": "disabled"
-                    }
-                ]
-            }
-        }, 
-        "configuration": {
-            "description": "Set up your add-on", 
-            "tabs": [
-                {
-                    "name": "logging", 
-                    "entity": [
-                        {
-                            "type": "singleSelect", 
-                            "label": "Log level", 
-                            "defaultValue": "INFO", 
-                            "field": "loglevel", 
-                            "options": {
-                                "disableSearch": true, 
-                                "autoCompleteFields": [
-                                    {
-                                        "value": "DEBUG", 
-                                        "label": "DEBUG"
-                                    }, 
-                                    {
-                                        "value": "INFO", 
-                                        "label": "INFO"
-                                    }, 
-                                    {
-                                        "value": "WARNING", 
-                                        "label": "WARNING"
-                                    }, 
-                                    {
-                                        "value": "ERROR", 
-                                        "label": "ERROR"
-                                    }, 
-                                    {
-                                        "value": "CRITICAL", 
-                                        "label": "CRITICAL"
-                                    }
-                                ]
                             }
                         }
-                    ], 
-                    "title": "Logging"
+                    ]
                 }
-            ], 
-            "title": "Configuration"
+            ]
         }
     }
 }
