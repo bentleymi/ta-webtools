@@ -73,6 +73,21 @@ def head(uri,sessionKey,verifyssl,cert,headers=None,payload=None,user=None,passw
     except requests.exceptions.RequestException as e:
         return(getException(e,uri))
 
+def patch(uri,sessionKey,verifyssl,cert,headers=None,payload=None,user=None,password=None,timeout=60):
+    try:
+        if sessionKey == None:
+            if user == None and password == None:
+                r = requests.patch(uri,data=payload,verify=verifyssl,cert=cert,headers=headers,timeout=timeout)
+            else:
+                r = requests.patch(uri,auth=(user,password),data=payload,verify=verifyssl,cert=cert,headers=headers,timeout=timeout)
+        else:
+            headers = {}
+            headers["Authorization"] =  'Splunk %s' % sessionKey
+            r = requests.patch(uri,data=payload,verify=verifyssl,cert=cert,headers=headers,timeout=timeout)
+        return(getResponse(r,uri))
+    except requests.exceptions.RequestException as e:
+        return(getException(e,uri))
+
 def post(uri,sessionKey,verifyssl,cert,headers=None,payload=None,user=None,password=None,timeout=60):
     try:
         if sessionKey == None:
@@ -123,7 +138,7 @@ def error():
     results = None
     stack =  traceback.format_exc()
     e = "syntax: | curl [ choice: uri=<uri> OR urifield=<urifield> ] " \
-    + "[ optional: method=<get | head | post | delete> verifyssl=<true | false> datafield=<datafield> "\
+    + "[ optional: method=<get | head | patch | post | delete> verifyssl=<true | false> datafield=<datafield> "\
     + "data=<data> user=<user> pass=<password> debug=<true | false> splunkauth=<true | false> "\
     + "splunkpasswdname=<username_in_passwordsconf> splunkpasswdcontext=<appcontext> timeout=<float> ]"
     splunk.Intersplunk.generateErrorResults(str(e))
@@ -327,6 +342,8 @@ def execute():
                         Result = get(uri,sessionKey,verifyssl,cert,headers,data,user,passwd,timeout)
                     if method.lower() in ("head","h"):
                         Result = head(uri,sessionKey,verifyssl,cert,headers,data,user,passwd,timeout)
+                    if method.lower() in ("patch"):
+                        Result = patch(uri,sessionKey,verifyssl,cert,headers,data,user,passwd,timeout)
                     if method.lower() in ("post","p"):
                         Result = post(uri,sessionKey,verifyssl,cert,headers,data,user,passwd,timeout)
                     if method.lower() in ("put"):
@@ -377,6 +394,8 @@ def execute():
                     Result = get(uri,sessionKey,verifyssl,cert,user_headers,data,user,passwd,timeout)
                 if method.lower() in ("head","h"):
                     Result = head(uri,sessionKey,verifyssl,cert,user_headers,data,user,passwd,timeout)
+                if method.lower() in ("patch"):
+                    Result = patch(uri,sessionKey,verifyssl,cert,user_headers,data,user,passwd,timeout)
                 if method.lower() in ("post","p"):
                     Result = post(uri,sessionKey,verifyssl,cert,user_headers,data,user,passwd,timeout)
                 if method.lower() in ("put"):
