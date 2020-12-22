@@ -5,7 +5,7 @@
     "id": {
       "group": null,
       "name": "TA-webtools",
-      "version": "2.0.0"
+      "version": "2.1.0"
     },
     "author": [
       {
@@ -15,7 +15,7 @@
       }
     ],
     "releaseDate": null,
-    "description": "This app adds the following custom splunk search commands:curl, testport, and urlencode.  It also adds curl and testport modular inputs.",
+    "description": "This app adds the following custom splunk search commands:curl, openssl, testport, and urlencode.  It also adds curl and testport modular inputs.",
     "classification": {
       "intendedAudience": null,
       "categories": [],
