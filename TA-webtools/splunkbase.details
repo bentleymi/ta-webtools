@@ -75,6 +75,24 @@ curl command:
 
 </code>
 
+openssl command:
+===============
+
+###Syntax:
+| openssl {typical openssl arguments} [optional: certfield=<FIELD>]
+</code>
+
+###Examples:
+
+<code>
+Find the "end date" of server.pem on the local filesystem (for remotely executing openssl on the host)
+| openssl x509 -in /opt/splunk/etc/auth/server.pem -enddate -noout
+
+Find the "end date" of a certificate found in the "cert" field (for use with indexed data)
+| openssl x509 -in -enddate -noout certfield="cert"
+</code>
+
+
 testport command:
 ===============
 ***UDP has been removed in version 1.2.4 due to failure to pass app inspect***
