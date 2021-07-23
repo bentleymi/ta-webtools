@@ -40,14 +40,19 @@ def collect_events(helper, ew):
         method = "post"
     if method.lower() in ("delete","del","d"):
         method = "delete"
-    if len(payload)>0:
-        payload = json.loads(payload)
-    else:
-        payload = None
-    if len(header)>0:
-        headers=json.loads(header)
-    else:
-        headers=None
+    
+    if payload is not None:	
+        if len(payload)>0:
+            payload = json.loads(payload)
+        else:
+            payload = None
+    
+    headers = None
+    if header is not None:
+        if len(header)>0:
+            headers=json.loads(header)
+        else:
+            headers=None
     
     data = {}
     data['curl_uri'] = uri
