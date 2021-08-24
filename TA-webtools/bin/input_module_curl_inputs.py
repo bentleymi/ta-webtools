@@ -33,7 +33,8 @@ def collect_events(helper, ew):
     header = helper.get_arg('request_headers')
     payload = helper.get_arg('payload')
     user = helper.get_arg('username')
-    passwd = helper.get_arg('password')    
+    passwd = helper.get_arg('password')
+    auth = (user, passwd)    
     if method.lower() in ("get","g"):
         method = "get"
     if method.lower() in ("post","put","p"):
@@ -48,6 +49,8 @@ def collect_events(helper, ew):
         headers=json.loads(header)
     else:
         headers=None
+    if (bool(user)==False and bool(passwd)==False):
+        auth=None
     
     data = {}
     data['curl_uri'] = uri
@@ -57,7 +60,7 @@ def collect_events(helper, ew):
     data['curl_payload'] = payload
     
     try:
-        r = requests.request(method, uri, auth=(user,passwd), data=payload, headers=headers, cookies=None, verify=verifyssl, cert=None, timeout=None)
+        r = requests.request(method, uri, auth=auth, data=payload, headers=headers, cookies=None, verify=verifyssl, cert=None, timeout=None)
         data['curl_response'] = r.text
         data['curl_status'] = r.status_code
 
