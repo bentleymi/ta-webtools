@@ -14,7 +14,7 @@
 ### limitations under the License.
 ### SCRIPT NAME: urlencode.py
 
-import six.moves.urllib.request, six.moves.urllib.parse, six.moves.urllib.error
+import six.moves.urllib.request, six.moves.urllib.parse, six.moves.urllib.error, six.moves.urllib.parse
 import splunk.Intersplunk
 import splunk.mining.dcutils as dcu
 import traceback
@@ -24,7 +24,7 @@ logger = dcu.getLogger()
 
 def encode(s):
         try:
-                return urllib.quote_plus(s)
+                return six.moves.urllib.parse.quote_plus(s)
 
         except Exception as e:
                 stack = traceback.format_exc()
