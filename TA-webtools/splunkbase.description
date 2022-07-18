@@ -1,8 +1,0 @@
-This app is intended to solve the problem of connecting to external APIs/REST with Splunk Search. It allows you to use CURL inline with your other SPL and to URLENCODE as needed too.  In addition, you can use TESTPORT to check if TCP ports are open.  Finally, we added the ability to use CURL and TESTPORT as modular inputs.  Making this app, your one stop shop for monitoring your web tools
-
-IF YOU LIKE THIS APP, PLEASE LEAVE A RATING... TIA!!! 
-
-Sourcecode is published at https://github.com/bentleymi/ta-webtools/
-
-I actively support my apps and am anxious to receive any feedback. Tag me on community.splunk.com or call 844-4SPLUNK to speak with me directly.
--JKat54
