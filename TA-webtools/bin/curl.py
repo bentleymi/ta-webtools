@@ -1,22 +1,3 @@
-### Author: Michael Camp Bentley aka JKat54
-### Contributors: Bert Shuler, Alex Cerier, Gareth Anderson
-### Copyright 2017 Michael Camp Bentley
-###
-### Licensed under the Apache License, Version 2.0 (the "License");
-### you may not use this file except in compliance with the License.
-### You may obtain a copy of the License at
-###
-###    http://www.apache.org/licenses/LICENSE-2.0
-###
-### Unless required by applicable law or agreed to in writing, software
-### distributed under the License is distributed on an "AS IS" BASIS,
-### WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-### See the License for the specific language governing permissions and
-### limitations under the License.
-###
-### SCRIPT NAME: curl.py
-### Description: splunk search command for posting or getting from external api's.
-### Doesnt use the HTTP_PROXY or HTTPS_PROXY defined in splunk-launch.conf
 
 import json
 import requests
@@ -135,7 +116,7 @@ def delete(uri,sessionKey,cert,headers=None,payload=None,user=None,password=None
     except requests.exceptions.RequestException as e:
         return(getException(e,uri))
 
-def error():
+def syntaxErr():
     results = None
     stack =  traceback.format_exc()
     e = "syntax: | curl [ choice: uri=<uri> OR urifield=<urifield> ] " \
@@ -144,6 +125,22 @@ def error():
     + "splunkpasswdname=<username_in_passwordsconf> splunkpasswdcontext=<appcontext> timeout=<float> ]"
     splunk.Intersplunk.generateErrorResults(str(e))
     logger.error(str(e) + ". Traceback: " + str(stack))
+    return
+
+def errorMsg(msg="This is the default error message"):
+    results = None
+    stack =  traceback.format_exc()
+    splunk.Intersplunk.generateErrorResults(str(msg))
+    logger.error(str(msg) + ". Traceback: " + str(stack))
+
+def enforceHTTPS(uri=None):
+    try:
+        if re.search("^https:\/\/",uri) == None:
+            errorMsg('uri field must start with "https://" and curl was provided with the following uri: "' + str(uri) + '"')
+            quit()
+    except Exception as e:
+        errorMsg(str(e))
+        quit()
 
 def execute():
     try:
@@ -168,7 +165,7 @@ def execute():
         # some options are required, raise error and give syntax if they are not given
         if 'uri' not in options and 'urifield' not in options:
             results = None
-            error()
+            syntaxErr()
         else:
             # default to get method if none specified
             if 'method' not in options:
@@ -182,26 +179,12 @@ def execute():
             else:
                 timeout = 60
 
-            # default uri to None and accept url instead of uri
+            # default uri to None and force https
             if 'uri' in options:
                 uri = str(options['uri'])
-            elif 'url' in options:
-                uri = str(options['url'])
             else:
                 uri = None
-
-            # verifyssl variable is required, so if not specified, it should = False
-            # uncomment to enable verifyssl enable/disabl
-            # commented for Splunk Cloud Compat.
-            #if 'verifyssl' not in options:
-            #    verifyssl = False
-            #else:
-            #    verifyssl = options['verifyssl']
-            #    if options['verifyssl'].lower() in ("y", "yes", "true", "t", "1"):
-            #        verifyssl = True
-            #    if options['verifyssl'].lower() in ("n", "no", "false", "f", "0"):
-            #        verifyssl = False
-
+            
             # use client certificate
             if 'clientcert' and 'certkey' in options:
                 cert = options['clientcert'], options['certkey']
@@ -343,6 +326,9 @@ def execute():
                                 else:
                                     result['curl_cert'] = cert
 
+                    # enforce HTTPS in uri field
+                    enforceHTTPS(uri)
+
                     # based on method, execute appropriate function
                     if method.lower() in ("get","g"):
                         Result = get(uri,sessionKey,cert,headers,data,user,passwd,timeout)
@@ -393,6 +379,9 @@ def execute():
                                 result['curl_certkey'] = cert[1]
                             else:
                                 result['curl_cert'] = cert
+
+                # enforce HTTPS in uri field
+                enforceHTTPS(uri)
 
                 # based on method, esecute appropriate function
                 if method.lower() in ("get","g"):
