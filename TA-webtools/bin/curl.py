@@ -301,7 +301,11 @@ def execute():
                             data = str(result[options['datafield']])
                     else:
                         data = None
-
+                    # We enable users at their risk to do http queries instead of https, while not recommended it is good to allow users freedom
+                    if 'enforcehttps'  in options:
+                        enforcehttps=options['enforcehttps']
+                    else:
+                        enforcehttps=1
                     # debugging option
                     if 'debug' in options:
                         if options['debug'].lower() in ("yes", "true", "t", "1"):
@@ -325,9 +329,12 @@ def execute():
                                     result['curl_certkey'] = cert[1]
                                 else:
                                     result['curl_cert'] = cert
+                            if enforcehttps:
+                                result['enforcehttps']=enforcehttps
 
                     # enforce HTTPS in uri field
-                    enforceHTTPS(uri)
+                    if enforcehttps and (enforcehttps==1 or enforcehttps==True):
+                        enforceHTTPS(uri)
 
                     # based on method, execute appropriate function
                     if method.lower() in ("get","g"):
@@ -359,7 +366,11 @@ def execute():
                     data = str(options['data'])
                 else:
                     data = None
-
+                # We enable users at their risk to do http queries instead of https, while not recommended it is good to allow users freedom
+                if 'enforcehttps'  in options:
+                    enforcehttps=options['enforcehttps']
+                else:
+                    enforcehttps=1
                 # debug option
                 if 'debug' in options:
                     if options['debug'].lower() in ("yes", "true", "t", "1"):
@@ -379,9 +390,12 @@ def execute():
                                 result['curl_certkey'] = cert[1]
                             else:
                                 result['curl_cert'] = cert
+                        if enforcehttps:
+                                result['enforcehttps']=enforcehttps
 
                 # enforce HTTPS in uri field
-                enforceHTTPS(uri)
+                if enforcehttps and (enforcehttps==1 or enforcehttps==True):
+                    enforceHTTPS(uri)
 
                 # based on method, esecute appropriate function
                 if method.lower() in ("get","g"):
