@@ -90,15 +90,22 @@ def patch(uri,sessionKey,verifyssl,cert,headers=None,payload=None,user=None,pass
 
 def post(uri,sessionKey,verifyssl,cert,headers=None,payload=None,user=None,password=None,timeout=60):
     try:
+        data=None
+        json_payload=None
+        if payload is not None:
+            if isinstance(payload, dict):
+                json_payload = payload
+            else:
+                data = payload
         if sessionKey == None:
             if user == None and password == None:
-                r = requests.post(uri,data=payload,verify=verifyssl,cert=cert,headers=headers,timeout=timeout)
+                r = requests.post(uri,data=data,json=json_payload,verify=verifyssl,cert=cert,headers=headers,timeout=timeout)
             else:
-                r = requests.post(uri,auth=(user,password),data=payload,verify=verifyssl,cert=cert,headers=headers,timeout=timeout)
+                r = requests.post(uri,auth=(user,password),data=data,json=json_payload,verify=verifyssl,cert=cert,headers=headers,timeout=timeout)
         else:
             headers = {}
             headers["Authorization"] =  'Splunk %s' % sessionKey
-            r = requests.post(uri,data=payload,verify=verifyssl,cert=cert,headers=headers,timeout=timeout)
+            r = requests.post(uri,data=data,json=json_payload,verify=verifyssl,cert=cert,headers=headers,timeout=timeout)
         return(getResponse(r,uri))
     except requests.exceptions.RequestException as e:
         return(getException(e,uri))
