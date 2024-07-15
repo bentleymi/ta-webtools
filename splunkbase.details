@@ -1,0 +1,91 @@
+#IF YOU LIKE THIS APP, PLEASE LEAVE A RATING... TIA!!!  Please tag me @jkat54 on community.splunk.com or call 1-844-4SPLUNK if you have any issues.  I actively support my apps and am anxious to receive any feedback. -JKat54
+
+Install Instructions:
+=====================
+Install app, restart splunk, profit!
+If you want to use passwords in conjunction with the curl SPL command, you will want to install this app as well: https://splunkbase.splunk.com/app/4013/.  It will allow you to store the passwords in the splunk password store (encrypted) and then use those credentials with the 'splunkpasswdname' and 'splunkpasswdcontext' curl command options.
+
+curl command:
+===============
+
+###Syntax:
+<code>[optional:<generating_search>] | curl [choice: uri=uri OR urifield=urifield] [optional: method=<DELETE|GET|HEAD|PATCH|POST|PUT  clientcert="/path/to/client/cert.pem" certkey="/path/to/client/cert.key" datafield=field_name data="data" headerfield=json_header_field_name user="user" pass="password" debug=true|false splunkauth=true|false splunkpasswdname="username_in_passwordsconf" splunkpasswdcontext="appcontext" timeout=float slee=timeInSecsBetweenCurls token=splunk_auth_token ]
+</code>
+
+###Examples:
+
+<code>
+
+- GET data from uri, specifing user, pass, and very short timeout:
+| curl method=get uri=https://localhost:8089/services/admin user=admin pass=changeme timeout=0.001 | table curl*
+
+
+- GET data from uri, passing existing session key:
+| curl method=get uri=https://localhost:8089/services/admin splunkauth=true | table curl*
+
+
+- POST data to uri, specifying data="{\"name\":\"Test\",\"value\":\"Hello World\",\"severity\":\"warn\"}": 
+| makeresults count=1
+| eval data="{\"name\":\"Test\",\"value\":\"Hello World\",\"severity\":\"warn\"}" 
+| curl method=post uri=https://localhost:8089/services/messages/new splunkauth=true debug=true datafield=data 
+| table curl*
+
+
+- POST data to uri, using a data field that exists in the Splunk search pipeline: 
+| makeresults count=1 
+| eval message="{\"name\":\"restart_link\",\"value\":\"Hello World\",\"severity\":\"warn\"}" 
+| curl method=post uri=https://localhost:8089/services/messages/new datafield=message splunkauth=true 
+| table curl*
+
+
+- Deleting fired alerts for search named "Test Alert":
+| rest /servicesNS/admin/search/alerts/fired\_alerts/Test%20Alert 
+| fields title 
+| head 10 
+| map search="
+ | curl method=delete uri="https://localhost:8089/servicesNS/admin/search/alerts/fired_alerts/$title$" user=admin pass=changeme 
+ | table *
+ "
+
+- Deleting fired alerts for search named "Test Alert" using a token:
+| rest /servicesNS/admin/search/alerts/fired\_alerts/Test%20Alert
+| fields title
+| head 10
+| map search="
+ | curl method=delete uri="https://localhost:8089/servicesNS/admin/search/alerts/fired_alerts/$title$" token="REALLY_LONG_AUTH_TOKEN_STRING"
+ | table *
+ "
+
+- Getting search results from google:
+| curl method=get uri=https://google.com/search?q=splunk debug=t 
+
+
+- Getting multiple search results from google using data in the pipe:
+| makeresults count=2 
+| eval data="q=".random() 
+| curl method=get uri="https://google.com/search" datafield=data debug=true
+
+
+- Setting a Custom Header & Test Data:
+| makeresults count=1  
+| eval header="{\"content-type\":\"application/json\"}" 
+| eval data="{\"test data\":\"DATA\"}" 
+| curl method=post uri=https://localhost:8089/services user=admin pass=changeme debug=true headerfield=header datafield=data
+
+
+- Call localhost but retrieve the password from the password store for username example (requires https://splunkbase.splunk.com/app/4013/)
+| curl method=get uri=https://localhost:8089/services user=example splunkpasswdname=example
+
+
+- Using the urifield option
+| makeresults count=1  
+| eval uri="https://localhost:8089/services" 
+| curl method=get urifield=uri 
+
+</code>
+
+urlencode command:
+====================
+
+###Syntax:
+<code><generating_search> | urlencode <field_1> <field_2> <field_n> ... | table <field_1> <field_2> <field_n> ... </code>

@@ -1,31 +1,26 @@
 {
-  "schemaVersion": "1.0.0",
+  "schemaVersion": "2.0.0",
   "info": {
     "title": "Webtools",
     "id": {
       "group": null,
       "name": "TA-webtools",
-      "version": "2.1.0"
+      "version": "3.1.0"
     },
-    "author": [
-      {
-        "name": "jkat54",
-        "email": null,
-        "company": null
-      }
-    ],
-    "releaseDate": null,
-    "description": "This app adds the following custom splunk search commands:curl, openssl, testport, and urlencode.  It also adds curl and testport modular inputs.",
+    "author": [{"name":"Michael \"JKat54\" Bentley","email":"m@ableversity.com","company":"Ableversity Incorporated"}],
+    "releaseDate": "7/15/2024",
+    "description": "This app adds the following custom splunk search commands:curl, openssl, testport, and urlencode.  It also adds curl and testport modular inputs."
+,
     "classification": {
-      "intendedAudience": null,
-      "categories": [],
-      "developmentStatus": null
+      "intendedAudience": "IT",
+      "categories": ["IT Operations"],
+      "developmentStatus": "Production/Latest"
     },
     "commonInformationModels": null,
     "license": {
-      "name": null,
-      "text": null,
-      "uri": null
+      "name": "Apache APL v2.0",
+      "text": "LICENSE",
+      "uri": "https://github.com/bentleymi/ta-webtools/LICENSE"
     },
     "privacyPolicy": {
       "name": null,
@@ -38,16 +33,15 @@
       "uri": null
     }
   },
-  "dependencies": {
-  },
-  "tasks": [],
-  "inputGroups": {
-  },
-  "incompatibleApps": {
-  },
-  "platformRequirements": {
-    "splunk": {
-      "Enterprise": "*"
-    }
-  }
+  "dependencies": null,
+  "tasks": null,
+  "inputGroups": null,
+  "incompatibleApps": null,
+  "platformRequirements": null,
+  "supportedDeployments": [
+    "_standalone",
+    "_distributed"
+  ],
+  "targetWorkloads": null
 }
+
