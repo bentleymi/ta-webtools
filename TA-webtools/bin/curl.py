@@ -171,7 +171,8 @@ def execute():
     try:
         # get the keywords suplied to the curl command
         argv = splunk.Intersplunk.win32_utf8_argv() or sys.argv
-
+        user = None
+        passwd = None
         # for each arg
         first = True
         options = {}
