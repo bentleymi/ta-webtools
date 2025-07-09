@@ -84,6 +84,10 @@ curl command:
 
 </code>
 
+### Self Signed Server Certs Workaround
+
+If the endpoint/uri you're "curling" is protected with self signed certificates, you'll want to append your CA cert to Python-3.7\Lib\site-packages\certifi\cacert.pem.  This CA is used by the certifi lib, which is used by the requests lib we used to make this app work.  It is different from the Splunk CA Store.  This cacert.pem is also monitored for changes by the File Integrety Monitor and you'll have to ignore it see this article for instructions on how to do so: https://help.splunk.com/en/splunk-enterprise/administer/monitor/9.4/configure-the-monitoring-console/access-and-customize-health-check
+
 urlencode command:
 ====================
 
