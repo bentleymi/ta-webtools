@@ -228,9 +228,9 @@ def execute():
                 uri = None
             
             # use client certificate
-            if 'clientcert' and 'certkey' in options:
+            if 'clientcert' in options and 'certkey' in options:
                 cert = options['clientcert'], options['certkey']
-            if 'clientcert' in options and not 'certkey' in options:
+            elif 'clientcert' in options and not 'certkey' in options:
                 cert = options['clientcert']
             else:
                 cert = None
