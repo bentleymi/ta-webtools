@@ -1,4 +1,3 @@
-
 import json
 import requests
 import splunk.Intersplunk
@@ -25,117 +24,117 @@ def getException(e,uri):
     response['url'] = uri
     return(response)
 
-def get(uri,sessionKey,cert,token=None,headers=None,payload=None,user=None,password=None,timeout=60):
+def get(uri,sessionKey,cert,token=None,headers=None,payload=None,timeout=60,user=None,password=None,proxies=None):
     try:
         if sessionKey == None and token == None:
             if user == None and password == None:
-                r = requests.get(uri,params=payload,verify=True,cert=cert,headers=headers,timeout=timeout)
+                r = requests.get(uri,params=payload,verify=True,cert=cert,headers=headers,timeout=timeout,proxies=proxies)
             else:
-                r = requests.get(uri,auth=(user,password),params=payload,verify=True,cert=cert,headers=headers,timeout=timeout)
+                r = requests.get(uri,auth=(user,password),params=payload,verify=True,cert=cert,headers=headers,timeout=timeout,proxies=proxies)
         elif token != None:
             headers = {}
             headers["Authorization"] = "Bearer %s" % token
-            r = requests.get(uri,params=payload,verify=True,cert=cert,headers=headers,timeout=timeout)
+            r = requests.get(uri,params=payload,verify=True,cert=cert,headers=headers,timeout=timeout,proxies=proxies)
         else:
             headers = {}
             headers["Authorization"] = "Splunk %s" % sessionKey
-            r = requests.get(uri,params=payload,verify=True,cert=cert,headers=headers,timeout=timeout)
+            r = requests.get(uri,params=payload,verify=True,cert=cert,headers=headers,timeout=timeout,proxies=proxies)
         return(getResponse(r,uri))
     except requests.exceptions.RequestException as e:
         return(getException(e,uri))
 
-def head(uri,sessionKey,cert,token=None,headers=None,payload=None,user=None,password=None,timeout=60):
+def head(uri,sessionKey,cert,token=None,headers=None,payload=None,timeout=60,user=None,password=None,proxies=None):
     try:
         if sessionKey == None and token == None:
             if user == None and password == None:
-                r = requests.head(uri,params=payload,verify=True,cert=cert,headers=headers,timeout=timeout)
+                r = requests.head(uri,params=payload,verify=True,cert=cert,headers=headers,timeout=timeout,proxies=proxies)
             else:
-                r = requests.head(uri,auth=(user,password),params=payload,verify=True,cert=cert,headers=headers,timeout=timeout)
+                r = requests.head(uri,auth=(user,password),params=payload,verify=True,cert=cert,headers=headers,timeout=timeout,proxies=proxies)
         elif token != None:
             headers = {}
             headers["Authorization"] = "Bearer %s" % token
-            r = requests.head(uri,params=payload,verify=True,cert=cert,headers=headers,timeout=timeout)                
+            r = requests.head(uri,params=payload,verify=True,cert=cert,headers=headers,timeout=timeout,proxies=proxies)                
         else:
             headers = {}
             headers["Authorization"] = "Splunk %s" % sessionKey
-            r = requests.head(uri,params=payload,verify=True,cert=cert,headers=headers,timeout=timeout)
+            r = requests.head(uri,params=payload,verify=True,cert=cert,headers=headers,timeout=timeout,proxies=proxies)
         return(getResponse(r,uri))
     except requests.exceptions.RequestException as e:
         return(getException(e,uri))
 
-def patch(uri,sessionKey,cert,token=None,headers=None,payload=None,user=None,password=None,timeout=60):
+def patch(uri,sessionKey,cert,token=None,headers=None,payload=None,timeout=60,user=None,password=None,proxies=None):
     try:
         if sessionKey == None and token == None:
             if user == None and password == None:
-                r = requests.patch(uri,data=payload,verify=True,cert=cert,headers=headers,timeout=timeout)
+                r = requests.patch(uri,data=payload,verify=True,cert=cert,headers=headers,timeout=timeout,proxies=proxies)
             else:
-                r = requests.patch(uri,auth=(user,password),data=payload,verify=True,cert=cert,headers=headers,timeout=timeout)
+                r = requests.patch(uri,auth=(user,password),data=payload,verify=True,cert=cert,headers=headers,timeout=timeout,proxies=proxies)
         elif token != None:
             headers = {}
             headers["Authorization"] = "Bearer %s" % token
-            r = requests.patch(uri,params=payload,verify=True,cert=cert,headers=headers,timeout=timeout)                
+            r = requests.patch(uri,params=payload,verify=True,cert=cert,headers=headers,timeout=timeout,proxies=proxies)                
         else:
             headers = {}
             headers["Authorization"] =  "Splunk %s" % sessionKey
-            r = requests.patch(uri,data=payload,verify=True,cert=cert,headers=headers,timeout=timeout)
+            r = requests.patch(uri,data=payload,verify=True,cert=cert,headers=headers,timeout=timeout,proxies=proxies)
         return(getResponse(r,uri))
     except requests.exceptions.RequestException as e:
         return(getException(e,uri))
 
-def post(uri,sessionKey,cert,token=None,headers=None,payload=None,user=None,password=None,timeout=60):
+def post(uri,sessionKey,cert,token=None,headers=None,payload=None,timeout=60,user=None,password=None,proxies=None):
     try:
         if sessionKey == None and token == None:
             if user == None and password == None:
-                r = requests.post(uri,data=payload,verify=True,cert=cert,headers=headers,timeout=timeout)
+                r = requests.post(uri,data=payload,verify=True,cert=cert,headers=headers,timeout=timeout,proxies=proxies)
             else:
-                r = requests.post(uri,auth=(user,password),data=payload,verify=True,cert=cert,headers=headers,timeout=timeout)
+                r = requests.post(uri,auth=(user,password),data=payload,verify=True,cert=cert,headers=headers,timeout=timeout,proxies=proxies)
         elif token != None:
             headers = {}
             headers["Authorization"] = "Bearer %s" % token
-            r = requests.post(uri,params=payload,verify=True,cert=cert,headers=headers,timeout=timeout)                
+            r = requests.post(uri,params=payload,verify=True,cert=cert,headers=headers,timeout=timeout,proxies=proxies)                
         else:
             headers = {}
             headers["Authorization"] =  "Splunk %s" % sessionKey
-            r = requests.post(uri,data=payload,verify=True,cert=cert,headers=headers,timeout=timeout)
+            r = requests.post(uri,data=payload,verify=True,cert=cert,headers=headers,timeout=timeout,proxies=proxies)
         return(getResponse(r,uri))
     except requests.exceptions.RequestException as e:
         return(getException(e,uri))
 
-def put(uri,sessionKey,cert,token=None,headers=None,payload=None,user=None,password=None,timeout=60):
+def put(uri,sessionKey,cert,token=None,headers=None,payload=None,timeout=60,user=None,password=None,proxies=None):
     try:
         if sessionKey == None and token == None:
             if user == None and password == None:
-                r = requests.put(uri,data=payload,verify=True,cert=cert,headers=headers,timeout=timeout)
+                r = requests.put(uri,data=payload,verify=True,cert=cert,headers=headers,timeout=timeout,proxies=proxies)
             else:
-                r = requests.put(uri,auth=(user,password),data=payload,verify=True,cert=cert,headers=headers,timeout=timeout)
+                r = requests.put(uri,auth=(user,password),data=payload,verify=True,cert=cert,headers=headers,timeout=timeout,proxies=proxies)
         elif token != None:
             headers = {}
             headers["Authorization"] = "Bearer %s" % token
-            r = requests.put(uri,params=payload,verify=True,cert=cert,headers=headers,timeout=timeout)                
+            r = requests.put(uri,params=payload,verify=True,cert=cert,headers=headers,timeout=timeout,proxies=proxies)                
         else:
             headers = {}
             headers["Authorization"] =  "Splunk %s" % sessionKey
-            r = requests.put(uri,data=payload,verify=True,cert=cert,headers=headers,timeout=timeout)
+            r = requests.put(uri,data=payload,verify=True,cert=cert,headers=headers,timeout=timeout,proxies=proxies)
         return(getResponse(r,uri))
     except requests.exceptions.RequestException as e:
         return(getException(e,uri))
 
 
-def delete(uri,sessionKey,cert,token=None,headers=None,payload=None,user=None,password=None,timeout=60):
+def delete(uri,sessionKey,cert,token=None,headers=None,payload=None,timeout=60,user=None,password=None,proxies=None):
     try:
         if sessionKey == None and token == None:
             if user == None and password == None:
-                r = requests.delete(uri,data=payload,verify=True,cert=cert,headers=headers,timeout=timeout)
+                r = requests.delete(uri,data=payload,verify=True,cert=cert,headers=headers,timeout=timeout,proxies=proxies)
             else:
-                r = requests.delete(uri,auth=(user,password),data=payload,verify=True,cert=cert,headers=headers,timeout=timeout)
+                r = requests.delete(uri,auth=(user,password),data=payload,verify=True,cert=cert,headers=headers,timeout=timeout,proxies=proxies)
         elif token != None:
             headers = {}
             headers["Authorization"] = "Bearer %s" % token
-            r = requests.delete(uri,params=payload,verify=True,cert=cert,headers=headers,timeout=timeout)                
+            r = requests.delete(uri,params=payload,verify=True,cert=cert,headers=headers,timeout=timeout,proxies=proxies)                
         else:
             headers = {}
             headers["Authorization"] = 'Splunk %s' % sessionKey
-            r = requests.delete(uri,data=payload,verify=True,cert=cert,headers=headers,timeout=timeout)
+            r = requests.delete(uri,data=payload,verify=True,cert=cert,headers=headers,timeout=timeout,proxies=proxies)
         return(getResponse(r,uri))
     except requests.exceptions.RequestException as e:
         return(getException(e,uri))
@@ -145,9 +144,9 @@ def syntaxErr():
     stack =  traceback.format_exc()
     e = "syntax: | curl [ choice: uri=<uri> OR urifield=<urifield> ] " \
     + "[ optional: method=<get | head | patch | post | put | delete> datafield=<datafield> "\
-    + "data=<data> user=<user> pass=<password> debug=<true | false> splunkauth=<true | false> "\
+    + "data=<data> debug=<true | false> splunkauth=<true | false> "\
     + "splunkpasswdname=<username_in_passwordsconf> splunkpasswdcontext=<appcontext> timeout=<float> "\
-    + "token=<splunk_auth_token> ]"
+    + "token=<splunk_auth_token> proxy=<proxy_url> proxy_auth=<username:password> ]"
     splunk.Intersplunk.generateErrorResults(str(e))
     logger.error(str(e) + ". Traceback: " + str(stack))
     return
@@ -169,6 +168,10 @@ def enforceHTTPS(uri=None):
 
 def execute():
     try:
+        # Initialize authentication variables
+        user = None
+        passwd = None
+        
         # get the keywords suplied to the curl command
         argv = splunk.Intersplunk.win32_utf8_argv() or sys.argv
 
@@ -183,6 +186,20 @@ def execute():
             else:
                 result = pattern.match(arg)
                 options[result.group(1)] = result.group(2)
+
+        # Setup proxy configuration if provided
+        proxies = None
+        if 'proxy' in options:
+            proxy_url = options['proxy']
+            if 'proxy_auth' in options:
+                # Split username:password format
+                auth = options['proxy_auth'].split(':')
+                if len(auth) == 2:
+                    proxy_url = proxy_url.replace('://', '://' + auth[0] + ':' + auth[1] + '@')
+            proxies = {
+                'http': proxy_url,
+                'https': proxy_url
+            }
 
         # get the previous search results
         results,dummyresults,settings = splunk.Intersplunk.getOrganizedResults()
@@ -218,20 +235,6 @@ def execute():
             else:
                 cert = None
 
-            # user variable is required, so if not specified, it should = None
-            if 'user' not in options:
-                user = None
-            else:
-                user = options['user']
-
-            # passwd variable is required, so if not specified, it should = None
-            if 'pass' not in options:
-                # handle if user gives "password" instead of "pass"
-                if 'password' in options:
-                    passwd = options['password']
-                passwd = None
-            else:
-                passwd = options['pass']
 
             # splunkpasswdcontext variable is optional, defaults to -
             if 'splunkpasswdcontext' not in options:
@@ -318,6 +321,8 @@ def execute():
                         headers = user_headers
                     else:
                         headers = None
+                    
+                    data = None
 
                     # if data in options, set data = options['data']
                     if 'data' in options:
@@ -329,8 +334,7 @@ def execute():
                             data = json.loads(result[options['datafield']])
                         except:
                             data = str(result[options['datafield']])
-                    else:
-                        data = None
+
 
                     # debugging option
                     if 'debug' in options:
@@ -361,17 +365,17 @@ def execute():
 
                     # based on method, execute appropriate function
                     if method.lower() in ("get","g"):
-                        Result = get(uri,sessionKey,cert,token,headers,data,user,passwd,timeout)
+                        Result = get(uri,sessionKey,cert,token,headers,data,timeout,user,passwd,proxies)
                     if method.lower() in ("head","h"):
-                        Result = head(uri,sessionKey,cert,token,headers,data,user,passwd,timeout)
+                        Result = head(uri,sessionKey,cert,token,headers,data,timeout,user,passwd,proxies)
                     if method.lower() in ("patch"):
-                        Result = patch(uri,sessionKey,cert,token,headers,data,user,passwd,timeout)
+                        Result = patch(uri,sessionKey,cert,token,headers,data,timeout,user,passwd,proxies)
                     if method.lower() in ("post","p"):
-                        Result = post(uri,sessionKey,cert,token,headers,data,user,passwd,timeout)
+                        Result = post(uri,sessionKey,cert,token,headers,data,timeout,user,passwd,proxies)
                     if method.lower() in ("put"):
-                        Result = put(uri,sessionKey,cert,token,headers,data,user,passwd,timeout)
+                        Result = put(uri,sessionKey,cert,token,headers,data,timeout,user,passwd,proxies)
                     if method.lower() in ("delete","del","d"):
-                        Result = delete(uri,sessionKey,cert,token,headers,data,user,passwd,timeout)
+                        Result = delete(uri,sessionKey,cert,token,headers,data,timeout,user,passwd,proxies)
 
                     # append the result to results in the splunk search pipeline
                     result['curl_status'] = Result['status']
@@ -383,7 +387,8 @@ def execute():
                 # build splunk result payload
                 result={}
                 results=[]
-
+                user=None
+                passwd=None
                 # if user specifed data manually
                 if 'data' in options:
                     data = str(options['data'])
@@ -415,17 +420,17 @@ def execute():
 
                 # based on method, esecute appropriate function
                 if method.lower() in ("get","g"):
-                    Result = get(uri,sessionKey,cert,token,user_headers,data,user,passwd,timeout)
+                    Result = get(uri,sessionKey,cert,token,user_headers,data,timeout,user,passwd,proxies)
                 if method.lower() in ("head","h"):
-                    Result = head(uri,sessionKey,cert,token,user_headers,data,user,passwd,timeout)
+                    Result = head(uri,sessionKey,cert,token,user_headers,data,timeout,user,passwd,proxies)
                 if method.lower() in ("patch"):
-                    Result = patch(uri,sessionKey,cert,token,user_headers,data,user,passwd,timeout)
+                    Result = patch(uri,sessionKey,cert,token,user_headers,data,timeout,user,passwd,proxies)
                 if method.lower() in ("post","p"):
-                    Result = post(uri,sessionKey,cert,token,user_headers,data,user,passwd,timeout)
+                    Result = post(uri,sessionKey,cert,token,user_headers,data,timeout,user,passwd,proxies)
                 if method.lower() in ("put"):
-                    Result = put(uri,sessionKey,cert,token,user_headers,data,user,passwd,timeout)
+                    Result = put(uri,sessionKey,cert,token,user_headers,data,timeout,user,passwd,proxies)
                 if method.lower() in ("delete","del","d"):
-                    Result = delete(uri,sessionKey,cert,token,user_headers,data,user,passwd,timeout)
+                    Result = delete(uri,sessionKey,cert,token,user_headers,data,timeout,user,passwd,proxies)
 
                 # append the result to splunk result payload
                 result['curl_status'] = Result['status']
