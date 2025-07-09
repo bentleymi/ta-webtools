@@ -43,7 +43,7 @@ curl command:
 | fields title 
 | head 10 
 | map search="
- | curl method=delete uri="https://localhost:8089/servicesNS/admin/search/alerts/fired_alerts/$title$" user=admin pass=changeme 
+ | curl method=delete uri="https://localhost:8089/servicesNS/admin/search/alerts/fired_alerts/$title$" splunkauth=true 
  | table *
  "
 
@@ -70,7 +70,7 @@ curl command:
 | makeresults count=1  
 | eval header="{\"content-type\":\"application/json\"}" 
 | eval data="{\"test data\":\"DATA\"}" 
-| curl method=post uri=https://localhost:8089/services user=admin pass=changeme debug=true headerfield=header datafield=data
+| curl method=post uri=https://localhost:8089/services debug=true headerfield=header datafield=data
 
 
 - Call localhost but retrieve the password from the password store for username example (requires https://splunkbase.splunk.com/app/4013/)
