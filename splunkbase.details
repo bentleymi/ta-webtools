@@ -9,19 +9,21 @@ curl command:
 ===============
 
 ###Syntax:
-<code>[optional:<generating_search>] | curl [choice: uri=uri OR urifield=urifield] [optional: method=<DELETE|GET|HEAD|PATCH|POST|PUT  clientcert="/path/to/client/cert.pem" certkey="/path/to/client/cert.key" datafield=field_name data="data" headers="<JSON_STRING>" headerfield=<JSON_FIELD> user="user" pass="password" debug=[true|false] splunkauth=[true|false] splunkpasswdname="username_in_passwordsconf" splunkpasswdcontext="appcontext" timeout=float sleep=timeInSecsBetweenCurls]
+<code>[optional:<generating_search>] | curl [choice: uri=uri OR urifield=urifield] [optional: method=<DELETE|GET|HEAD|PATCH|POST|PUT  clientcert="/path/to/client/cert.pem" certkey="/path/to/client/cert.key" datafield=field_name data="data" headers="<JSON_STRING>" headerfield=<JSON_FIELD> debug=[true|false] splunkauth=[true|false] splunkpasswdname="username_in_passwordsconf" splunkpasswdcontext="appcontext" timeout=float sleep=timeInSecsBetweenCurls]
 </code>
 
 ###Examples:
 
 <code>
 
-- GET data from uri, specifing user, pass, and very short timeout:
-| curl method=get uri=https://localhost:8089/services/admin user=admin pass=changeme timeout=0.001 | table curl*
-
+NOTE: The "localhost" searches no longer work in version 3.x because verify_ssl has been forced to "true" for all curls
 
 - GET data from uri, passing existing session key:
 | curl method=get uri=https://localhost:8089/services/admin splunkauth=true | table curl*
+
+
+- GET data from Splunk uri, specifing splunk_auth=true and very short timeout:
+| curl method=get uri=https://localhost:8089/services/admin splunk_auth=true timeout=0.001 | table curl*
 
 
 - POST data to uri, specifying data="{\"name\":\"Test\",\"value\":\"Hello World\",\"severity\":\"warn\"}": 
