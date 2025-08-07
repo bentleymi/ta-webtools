@@ -1,0 +1,12 @@
+[MASTER]
+# Paths for local and remote development
+init-hook = import sys;
+    sys.path.append("/opt/splunk/lib/python3.9");
+    sys.path.append("/opt/splunk/lib/python3.9/site-packages");
+disable = W0105,W0212,W0702,W0718,W0719,C0103,C0209,C0301
+
+[BASIC]
+good-names=
+    i,
+    e,
+    logger

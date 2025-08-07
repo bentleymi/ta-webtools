@@ -1,0 +1,25 @@
+# Splunk local artifacts
+**/metadata/local.meta
+**/local/
+
+# Mac OSX noise
+.DS_Store
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[co]
+*$py.class
+*.pyc
+*.py.bak
+
+# Environments
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# pytype static type analyzer
+.pytype/

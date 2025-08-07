@@ -1,0 +1,20 @@
+{
+    // Default tab spacing of 4 for Python
+    "editor.insertSpaces": true,
+    "pylint.interpreter": [
+        "/opt/splunk/bin/python3.9",
+    ],
+    // Python Language Server Configuration
+    "python.languageServer": "Pylance",
+    "python.analysis.indexing": true,
+    "python.analysis.diagnosticMode": "workspace",
+    "python.analysis.typeCheckingMode": "basic",
+    "python.analysis.completeFunctionParens": true,
+    "python.analysis.exclude": ["**/__pycache__", ".git"],
+    "python.analysis.ignore": ["/opt/splunk/", "**/site-packages"],
+    "python.analysis.extraPaths": [
+        "/opt/splunk/lib/python3.9",
+        "/opt/splunk/lib/python3.9/site-packages"
+    ],
+    "python.defaultInterpreterPath": "/opt/splunk/bin/python3.9"
+}
