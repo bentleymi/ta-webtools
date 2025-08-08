@@ -117,7 +117,8 @@ def http_request(
     payload: Optional[Any] = None,
     timeout: int = 60,
     user: Optional[str] = None,
-    password: Optional[str] = None
+    password: Optional[str] = None,
+    verifyssl: Optional[bool] = True
 ) -> Dict[str, Any]:
     """
     Executes an HTTP request using the specified parameters.
@@ -150,15 +151,26 @@ def http_request(
         allowed_methods = {"get", "post", "put", "delete", "patch", "head", "options"}
         method = METHOD_ALIASES.get(method.lower(), str(method.lower()))
 
+        # Identify if the request is local
+        # Extract host (without port) from URI, supporting IPv6 and other hosts
+        match = re.match(r'^https?://(\[[^\]]+\]|[^:/]+)', uri)
+        url_host = match.group(1) if match else ''
+        url_host = url_host.strip('[]')
+        is_local = url_host in ['localhost', '127.0.0.1', '::1']
+        if is_local:
+            # Disable SSL verification for local requests
+            verifyssl = False
+        
         req_headers = headers if headers else {}
         req_headers.update(build_auth_headers(sessionKey, token))
         req_args = {
             "url": uri,
-            "verify": True,
-            "cert": cert,
+            "verify": verifyssl,
             "headers": req_headers,
             "timeout": timeout
         }
+        if cert:
+            req_args["cert"] = cert
         if user and password:
             req_args["auth"] = (user, password)
         if method in ["get", "head"]:
@@ -282,6 +294,7 @@ def execute():
             timeout: int = int(options.get('timeout', 60))
             # default uri to None and force https
             uri: Optional[str] = options.get('uri')
+            verifyssl: bool = bool(options.get('verifyssl', True)) if not cli.isCloudInstanceType() else True
 
             # use client certificate
             if 'clientcert' in options:
@@ -428,7 +441,8 @@ def execute():
                     data,
                     timeout,
                     user,
-                    passwd
+                    passwd,
+                    verifyssl
                 )
 
             # Debugging info
@@ -444,7 +458,7 @@ def execute():
                     ('curl_sleep', sleep),
                     ('curl_cert', cert[0] if cert and type(cert) is tuple else None),
                     ('curl_certkey', cert[1] if cert and type(cert) is tuple and cert[1] is not None else None),
-                    ('curl_verifyssl', "Forced to be True for Splunk Cloud Compatibility" if cli.isCloudInstanceType() else None)
+                    ('curl_verifyssl', "Forced to be True for Splunk Cloud Compatibility" if cli.isCloudInstanceType() else verifyssl)
                 ]:
                     if v is not None:
                         result[k] = v
