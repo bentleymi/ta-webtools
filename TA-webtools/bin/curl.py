@@ -220,6 +220,7 @@ def http_request(
         if payload is not None:
             req_args[payload_field] = payload
 
+        # Merge argument dicts
         all_args = req_args | kwargs
         if method in allowed_methods:
             r: requests.Response = getattr(requests, method)(**all_args)
@@ -401,8 +402,9 @@ def execute():
                 if not isinstance(options['headers'], dict):
                     errorMsg("Invalid JSON format in 'headers' option")
                     return
+                base_headers.update(options['headers'])
                 if splunkauth:
-                    base_headers.update(build_auth_headers(sessionKey=sessionKey, token=token))
+                    base_headers.update(build_auth_headers(sessionKey=sessionKey, token=token))                    
         
         # Determine results and search_mode
         if len(results) > 0:
@@ -427,9 +429,9 @@ def execute():
 
             # URI logic
             if 'urifield' in options:
-                uri_field: str = str(options['urifield'])
-                if uri_field and uri_field in result:
-                    uri = result.get(uri_field)
+                uri_field: Optional[str] = options.get('urifield') # type: ignore
+                if uri_field and uri_field in result and len(result[uri_field]) > 0:
+                    uri = result[uri_field]
                 else:
                     # Skip this result
                     continue
@@ -437,7 +439,6 @@ def execute():
                 continue
 
             # Headers logic
-            #headers = base_headers if base_headers else {}
             event_headers = {}
             if 'headerfield' in options and search_mode == 'streaming':
                 header_field: str = str(options['headerfield'])
@@ -485,7 +486,7 @@ def execute():
                     if not headers_content_type:
                         headers.update(ct_header)
             else:
-                data_str = str(data)
+                data_str = str(data) if data is not None else None
 
             # Auth logic
             auth: Optional[tuple] = (user, passwd) if user and passwd else None
