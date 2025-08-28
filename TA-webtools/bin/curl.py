@@ -5,6 +5,7 @@ import socket
 import time
 import re
 import json
+import urllib3
 import requests
 from typing import List, Dict, Optional, Union, Any
 import splunk.Intersplunk
@@ -73,6 +74,18 @@ def str_to_type(s: str) -> Union[str, int, float, bool, List[Any], Dict[str, Any
                 if is_str_bool(s, include_numbers=True):
                     return is_true(s)
                 return s
+
+def merge_two_dicts(x, y) -> dict:
+    """ Merge two dictionaries """
+    try:
+        # Python 3.9+
+        return x | y
+    except:
+        try:
+            return {**x, **y}
+        except Exception as e:
+            print("Error merging dictionaries", file=sys.stderr)
+            raise e
 
 # Get the keywords supplied to the command
 def parse_args() -> Dict[str, Union[str, int, float, bool, List[Any], Dict[str, Any]]]:
@@ -201,6 +214,7 @@ def http_request(
         if is_local:
             # Disable SSL verification for local requests
             verify = False
+            urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
             if proxies:
                 # Set no_proxy to ignore localhost and loopback IP range
                 if proxies.get("no_proxy") is None:
@@ -221,7 +235,7 @@ def http_request(
             req_args[payload_field] = payload
 
         # Merge argument dicts
-        all_args = req_args | kwargs
+        all_args = merge_two_dicts(req_args, kwargs)
         if method in allowed_methods:
             r: requests.Response = getattr(requests, method)(**all_args)
             return getResponse(r)
@@ -403,8 +417,9 @@ def execute():
                     errorMsg("Invalid JSON format in 'headers' option")
                     return
                 base_headers.update(options['headers'])
-                if splunkauth:
-                    base_headers.update(build_auth_headers(sessionKey=sessionKey, token=token))                    
+
+            if splunkauth:
+                base_headers.update(build_auth_headers(sessionKey=sessionKey, token=token))
         
         # Determine results and search_mode
         if len(results) > 0:
@@ -447,7 +462,7 @@ def execute():
                 except Exception:
                     event_headers = result[header_field]
 
-            headers = (base_headers if base_headers else {}) | event_headers
+            headers = merge_two_dicts((base_headers if base_headers else {}), event_headers)
             # Data logic
             data: Optional[Union[Dict[str, Any], List[Any], str, int, float, bool]] = None
             if 'data' in options:
@@ -480,10 +495,11 @@ def execute():
                 }
                 # Set the Content-Type header to application/json (if not already set)
                 if isinstance(headers, dict):
+                    headers_content_type_set = False
                     for k in headers:
                         if k.lower() == 'content-type':
-                            headers_content_type = True
-                    if not headers_content_type:
+                            headers_content_type_set = True
+                    if not headers_content_type_set:
                         headers.update(ct_header)
             else:
                 data_str = str(data) if data is not None else None
