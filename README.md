@@ -12,9 +12,10 @@ The `curl` command allows you to make HTTP requests from within Splunk searches.
 
 #### Optional Parameters
 - `method`: HTTP method to use (default: get)
-  - Supported values: get/g, head/h, patch, post/p, put, delete/del/d
-- `datafield`: Field name containing the data payload to send
+- `methodfield`: Field name containing the HTTP method
+  - Supported values: get/g, head/h, patch, post/p, put, delete/del/d, options/o
 - `data`: Static data payload to send
+- `datafield`: Field name containing the data payload to send
 - `debug`: Enable debug output (true/false)
 - `splunkauth`: Use Splunk authentication (true/false)
 - `splunkpasswdname`: Username from passwords.conf to use for authentication
@@ -28,10 +29,11 @@ The `curl` command allows you to make HTTP requests from within Splunk searches.
 - `sleep`: Time to sleep between requests in seconds (when processing multiple events)
 - `proxy`: Proxy URL to use for requests
 - `proxy_auth`: Proxy authentication in format username:password
+- `dryrun`: Run the command in test mode without invoking the curl request
 
 #### Security Notes
 - All URIs must use HTTPS protocol
-- SSL verification is enforced for Splunk Cloud compatibility
+- SSL verification is enforced for Splunk Cloud environments
 
 #### Output Fields
 The command adds the following fields to your events:
@@ -42,9 +44,11 @@ When debug=true, additional fields are added showing the command configuration:
 - `curl_method`: HTTP method used
 - `curl_verifyssl`: SSL verification status
 - `curl_uri`: Request URL
+- `curl_redirect`: Request URL after redirects (if any)
 - `curl_splunkauth`: Whether Splunk authentication was used
 - `curl_data_payload`: Data payload sent (if any)
-- `curl_header`: Headers used (if any)
+- `curl_header`: Request headers used (if any)
+- `curl_header_response`: Response headers received
 - `curl_cert`: Client certificate path (if used)
 - `curl_certkey`: Certificate key path (if used)
 - `curl_sleep`: Sleep duration between requests (if configured)
