@@ -29,6 +29,7 @@ The `curl` command allows you to make HTTP requests from within Splunk searches.
 - `sleep`: Time to sleep between requests in seconds (when processing multiple events)
 - `proxy`: Proxy URL to use for requests
 - `proxy_auth`: Proxy authentication in format username:password
+- `clean`: Remove HTML comments, extra whitespace, and tags such as script/style/link/meta
 - `dryrun`: Run the command in test mode without invoking the curl request
 
 #### Security Notes
