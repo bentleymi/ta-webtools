@@ -136,15 +136,34 @@ def build_auth_headers(sessionKey=None, token=None) -> Dict[str, str]:
 @lru_cache(maxsize=1)
 def get_proxy_settings() -> Dict[str, str]:
     """ Get the proxy settings from the configuration (cached) """
-    proxy_config = cli.getConfStanza('server', 'proxyConfig')
-    proxy_setting_keys = ['http_proxy', 'https_proxy', 'no_proxy']
+    try:
+        splunk_proxy_config = cli.getConfStanza('server', 'proxyConfig')
+    except Exception as e:
+        print(f"Error retrieving proxy settings: {str(e)}", file=sys.stderr)
+        splunk_proxy_config = {}
+    
+    # Map requests library proxy variables to Splunk setting and environment variable names
+    proxy_settings_map = {
+        'http': 'http_proxy', 
+        'https': 'https_proxy',
+        'no_proxy': 'no_proxy'
+    }
+
+    proxy_settings: Dict[str, str] = {}
+    ignore_env = False
     proxy_settings = {}
-    for k in proxy_setting_keys:
-        # Use the environment variable if not found in the config
-        env_setting = os.environ.get(k.upper(), None)
-        splunk_serverconf_setting = proxy_config.get(k, None)
-        if env_setting or splunk_serverconf_setting:
-            proxy_settings[k] = splunk_serverconf_setting if splunk_serverconf_setting else env_setting
+    for k, v in proxy_settings_map.items():
+        if splunk_proxy_config.get(v, None) is not None:
+            proxy_settings[k] = splunk_proxy_config[v]
+            # Don't mix and match setting origins
+            ignore_env = True
+
+    if not ignore_env:
+        for k, v in proxy_settings_map.items():
+            # Use the environment variable if not found in the config
+            env_setting: Optional[str] = os.environ.get(v.upper(), None)
+            if env_setting is not None:
+                proxy_settings[k] = env_setting
     return proxy_settings
 
 @lru_cache(maxsize=1)
@@ -207,8 +226,8 @@ def http_request(
 
     :param method: The HTTP method to use (e.g., 'get', 'post', etc.).
     :type method: str
-    :param uri: The target URI for the HTTP request.
-    :type uri: str
+    :param url: The target URL for the HTTP request.
+    :type url: str
     :param payload: Data or parameters to send with the request (optional).
     :type payload: Any, optional
     :param user: Username for HTTP Basic authentication (optional).
@@ -233,7 +252,6 @@ def http_request(
     try:
         method = METHOD_ALIASES.get(method.lower(), str(method.lower()))
         
-        proxies = proxies if proxies is not None else get_proxy_settings()
         if not should_enforce_https(url, verify):
             # Disable SSL verification for local requests
             verify = False
@@ -242,7 +260,11 @@ def http_request(
                 # Set no_proxy to ignore localhost and loopback IP range
                 if proxies.get("no_proxy") is None:
                     proxies.update({"no_proxy": f"{socket.gethostname()},{','.join(LOCAL_HOSTS)}"})
-        
+        if proxies and proxies.get("no_proxy") is not None:
+            # TODO: Make this work
+            os.environ['no_proxy'] = proxies.get("no_proxy", "")
+
+
         if method in ["get", "head"] and payload is not None:
             payload_field = 'params'
         elif payload is not None:
@@ -250,14 +272,19 @@ def http_request(
 
         req_args: Dict[str, Union[str, int, tuple, Dict]] = {
             "url": url,
-            "proxies": proxies,
             "verify": verify,
         }
+        if proxies is not None:
+            # Apply the proxy settings to the URL request
+            req_args['proxies'] = proxies
+            # TODO: Get no_proxy settings working
         if payload is not None:
             req_args[payload_field] = payload # type: ignore[reportArgumentType]
 
-        # Merge argument dicts
+        # Merge argument dicts and remove None values
         all_args = merge_two_dicts(req_args, kwargs)
+        all_args = {k: v for k, v in all_args.items() if v is not None}
+
         if method in list(METHOD_ALIASES.values()):
             # Capture request and response headers
             r: requests.Response = getattr(requests, method)(**all_args)
@@ -367,7 +394,6 @@ def execute():
         results: List[Dict[str, Any]] = []
         settings: Dict[str, Any] = {}
 
-
         # get the previous search results
         results, _, settings = splunk.Intersplunk.getOrganizedResults()
         
@@ -461,6 +487,37 @@ def execute():
         sleep: Optional[float] = float(options['sleep']) if 'sleep' in options else None # type: ignore[reportArgumentType]
         clean_result: Optional[bool] = bool(options.get('clean', False))
 
+        # Auth logic
+        auth: Optional[tuple] = (user, passwd) if user and passwd else None
+
+        # Proxy logic
+        proxy_server = options.get('proxy')
+        proxy_auth = options.get('proxy_auth')
+        # Normalize with get_proxy_settings format
+        if isinstance(proxy_server, str) and len(proxy_server.strip()) > 0:
+            proxies: Dict[str, str] = {
+                'http': proxy_server,
+                'https': proxy_server
+            }
+        else:
+            proxies = get_proxy_settings()
+
+        # Edit proxy settings to add the supplied authentication
+        # TODO: Support a Splunk password store credential, potentially dynamic (based on site/domain)
+        if proxies:
+            if isinstance(proxy_auth, str) and ':' in proxy_auth:
+                try:
+                    proxy_user, proxy_pass = str(proxy_auth).split(':')
+                    if 'http' in proxies and isinstance(proxies['http'], str):
+                        proxies['http'] = proxies['http'].replace('://', f'://{proxy_user}:{proxy_pass}@')
+                    if 'https' in proxies and isinstance(proxies['https'], str):
+                        proxies['https'] = proxies['https'].replace('://', f'://{proxy_user}:{proxy_pass}@')
+                except ValueError as e:
+                    errorMsg(f"Invalid proxy_auth format. Must be in the format 'user:pass': {e}")
+            elif isinstance(proxy_auth, str) and len(proxy_auth) > 0:
+                errorMsg("Invalid proxy_auth format. Must be in the format 'user:pass'")
+                sys.exit(1)
+
         ran_request = False
         for result in results:
             # Sleep logic (only applies after first iteration and if 'sleep' is set)
@@ -540,12 +597,6 @@ def execute():
                     if not headers_content_type_set:
                         headers.update(ct_header)
 
-            # Auth logic
-            auth: Optional[tuple] = (user, passwd) if user and passwd else None
-
-            # Proxy logic
-            # TODO: Add proxy logic for PROXY= and PROXY_AUTH= options
-            
             curl_result = {}
             ran_request = False
             if not uri in [None, ""]:
@@ -559,6 +610,7 @@ def execute():
                         uri,
                         data,
                         verifyssl,
+                        proxies=proxies,
                         headers=headers,
                         timeout=timeout,
                         cert=cert,
@@ -578,11 +630,12 @@ def execute():
             # Debugging info
             if 'debug' in options and is_true(options['debug']):
                 # Add debug fields to the result only if they have values
-                auth_header = curl_result['headers'].get("Authorization")
-                if auth_header and ' ' in auth_header:
-                    auth_header_prefix, auth_header_token = auth_header.split(" ")
-                    # Mask the token in the authorization header
-                    curl_result['headers'].update({"Authorization": f"{auth_header_prefix} {auth_header_token[:4]}...{auth_header_token[-4:]}"})
+                if 'headers' in curl_result:
+                    auth_header = curl_result['headers'].get("Authorization")
+                    if auth_header and ' ' in auth_header:
+                        auth_header_prefix, auth_header_token = auth_header.split(" ")
+                        # Mask the token in the authorization header
+                        curl_result['headers'].update({"Authorization": f"{auth_header_prefix} {auth_header_token[:4]}...{auth_header_token[-4:]}"})
                 for k, v in [
                     ('curl_method', method),
                     ('curl_uri', uri),
@@ -592,8 +645,9 @@ def execute():
                     ('curl_header_response', curl_result.get('headers_response')),
                     #('user_headers', user_headers),
                     ('curl_sleep', sleep),
-                    ('curl_cert', cert[0] if cert and type(cert) is tuple else None),
-                    ('curl_certkey', cert[1] if cert and type(cert) is tuple and cert[1] is not None else None),
+                    ('curl_proxy', {k: re.sub(r'(://[^/:]+:)([^/@]+)@', r'\1********@', v) for k, v in proxies.items()} if proxies else None),
+                    ('curl_cert', cert[0] if cert and isinstance(cert, tuple) else None),
+                    ('curl_certkey', cert[1] if cert and isinstance(cert, tuple) and cert[1] is not None else None),
                     ('curl_verifyssl', should_enforce_https(uri, verifyssl)),
                 ]:
                     if v is not None:
