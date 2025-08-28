@@ -7,7 +7,9 @@ import re
 import json
 import urllib3
 import requests
-from typing import List, Dict, Optional, Union, Any
+from requests.structures import CaseInsensitiveDict
+from functools import lru_cache
+from typing import List, Dict, Tuple, Optional, Union, Any
 import splunk.Intersplunk
 import splunk.mining.dcutils as dcu
 from splunk.clilib import cli_common as cli
@@ -27,8 +29,11 @@ METHOD_ALIASES = {
     "patch": "patch",
     "post": "post", "p": "post",
     "put": "put",
-    "delete": "delete", "del": "delete", "d": "delete"
+    "delete": "delete", "del": "delete", "d": "delete",
+    "options": "options", "o": "options"
 }
+ALLOWED_METHODS = ["get", "post", "put", "delete", "patch", "head", "options"]
+LOCAL_HOSTS = ["localhost", "127.0.0.1", "::1"]
 
 # region: Functions
 
@@ -128,8 +133,9 @@ def build_auth_headers(sessionKey=None, token=None) -> Dict[str, str]:
         return {"Authorization": f"Splunk {sessionKey}"}
     return {}
 
+@lru_cache(maxsize=1)
 def get_proxy_settings() -> Dict[str, str]:
-    """ Get the proxy settings from the configuration """
+    """ Get the proxy settings from the configuration (cached) """
     proxy_config = cli.getConfStanza('server', 'proxyConfig')
     proxy_setting_keys = ['http_proxy', 'https_proxy', 'no_proxy']
     proxy_settings = {}
@@ -141,23 +147,48 @@ def get_proxy_settings() -> Dict[str, str]:
             proxy_settings[k] = splunk_serverconf_setting if splunk_serverconf_setting else env_setting
     return proxy_settings
 
-def enforceHTTPS(uri: Optional[str]=None):
+@lru_cache(maxsize=1)
+def extract_url_host(url: str) -> str:
     """
-    Enforces that the given URI uses HTTPS protocol for Splunk Cloud instances.
+    Extracts the host from a web URL.
+
+    :param url: The URL to extract the host from.
+    :type url: str
+    :return: The extracted host, or an empty string if the URL is invalid.
+    :rtype: str
+    """
+    match = re.match(r'^https?://(\[[^\]]+\]|[^:/]+)', url)
+    url_host = match.group(1) if match else ''
+    return url_host.strip('[]')
+
+def should_enforce_https(url, verify) -> bool:
+    """
+    Determines whether HTTPS enforcement should be applied based on the environment.
+
+    :returns: True if HTTPS enforcement is required, False otherwise.
+    :rtype: bool
+    """
+    if url is None or not isinstance(url, str) or len(url.strip()) == 0:
+        return False
+    url_host = extract_url_host(url)
+    is_local = url_host in LOCAL_HOSTS
+    return not is_local and (verify or cli.isCloudInstanceType())
+
+def enforce_https(url: str) -> None:
+    """
+    Enforces that the given URL uses HTTPS protocol for Splunk Cloud instances.
 
     If the application is running in a Splunk Cloud environment, this function checks
-    that the provided URI starts with "https://". If not, it logs an error and exits
-    the program. If the URI is not a string or is empty, the function returns without action.
+    that the provided URL starts with "https://". If not, it logs an error and exits
+    the program. If the URL is not a string or is empty, the function returns without action.
 
-    :param uri: The URI to validate for HTTPS enforcement.
-    :type uri: Optional[str]
+    :param url: The URL to validate for HTTPS enforcement.
+    :type url: Optional[str]
     """
-    if not isinstance(uri, str) or len(uri.strip()) == 0 or not cli.isCloudInstanceType():
-        return
     # Enforce HTTPS for Splunk Cloud instance clients
     try:
-        if not uri.startswith("https://"):
-            errorMsg(f'uri field must start with "https://" and curl was provided with the following uri: "{str(uri)}"')
+        if not url.startswith("https://"):
+            errorMsg(f'url field must start with "https://" and curl was provided with the following url: "{str(url)}"')
             quit()
     except Exception as e:
         errorMsg(str(e))
@@ -165,8 +196,8 @@ def enforceHTTPS(uri: Optional[str]=None):
 
 def http_request(
     method: str,
-    uri: str,
-    payload: Optional[str] = None,
+    url: str,
+    payload: Optional[Union[str, Dict[str, Any], List[Any], Tuple, int, float, bool]] = None,
     verify: bool = True,
     proxies: Optional[Dict[str, str]] = None,
     **kwargs
@@ -200,51 +231,43 @@ def http_request(
     :rtype: dict
     """
     try:
-        allowed_methods = {"get", "post", "put", "delete", "patch", "head", "options"}
         method = METHOD_ALIASES.get(method.lower(), str(method.lower()))
-
-        # Identify if the request is local
-        # Extract host (without port) from URI, supporting IPv6 and other hosts
-        match = re.match(r'^https?://(\[[^\]]+\]|[^:/]+)', uri)
-        url_host = match.group(1) if match else ''
-        url_host = url_host.strip('[]')
-        is_local = url_host in ['localhost', '127.0.0.1', '::1']
         
-        proxies = proxies if proxies is not None else {}
-        if is_local:
+        proxies = proxies if proxies is not None else get_proxy_settings()
+        if not should_enforce_https(url, verify):
             # Disable SSL verification for local requests
             verify = False
             urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
             if proxies:
                 # Set no_proxy to ignore localhost and loopback IP range
                 if proxies.get("no_proxy") is None:
-                    proxies.update({"no_proxy": f"{socket.gethostname()},localhost,127.0.0.1,::1"})
+                    proxies.update({"no_proxy": f"{socket.gethostname()},{','.join(LOCAL_HOSTS)}"})
         
-
         if method in ["get", "head"] and payload is not None:
             payload_field = 'params'
         elif payload is not None:
             payload_field = 'data'
 
         req_args: Dict[str, Union[str, int, tuple, Dict]] = {
-            "url": uri,
+            "url": url,
             "proxies": proxies,
             "verify": verify,
         }
         if payload is not None:
-            req_args[payload_field] = payload
+            req_args[payload_field] = payload # type: ignore[reportArgumentType]
 
         # Merge argument dicts
         all_args = merge_two_dicts(req_args, kwargs)
-        if method in allowed_methods:
+        if method in list(METHOD_ALIASES.values()):
+            # Capture request and response headers
             r: requests.Response = getattr(requests, method)(**all_args)
             return getResponse(r)
         else:
             raise ValueError(f"HTTP method '{method}' is not allowed")
     except requests.exceptions.RequestException as e:
-        return getException(e, uri)
+        return getException(e, url)
 
-def getResponse(r) -> Dict[str, str]:
+def getResponse(r: requests.Response) -> Dict[str, str]:
     """
     Constructs a response dictionary from a requests.Response object.
 
@@ -257,7 +280,9 @@ def getResponse(r) -> Dict[str, str]:
     response = {
         'status': r.status_code,
         'message': r.text,
-        'url': r.url
+        'url': r.url,
+        'headers': r.request.headers, # type: ignore[reportAttributeAccessIssue]
+        'headers_response': r.headers
     }
     return response
 
@@ -337,8 +362,11 @@ def execute():
         options = parse_args()
         user: Optional[str] = None
         passwd: Optional[str] = None
+        dryrun: bool = bool(options.get('dryrun', False))
+        
         results: List[Dict[str, Any]] = []
         settings: Dict[str, Any] = {}
+
 
         # get the previous search results
         results, _, settings = splunk.Intersplunk.getOrganizedResults()
@@ -411,7 +439,7 @@ def execute():
                     and 'splunkpasswdname' not in options \
                     else None
 
-            base_headers = {}
+            base_headers = CaseInsensitiveDict()
             if 'headers' in options:
                 if not isinstance(options['headers'], dict):
                     errorMsg("Invalid JSON format in 'headers' option")
@@ -430,7 +458,7 @@ def execute():
             results = [{}]
 
         sleepCounter = 0
-        sleep: Optional[float] = float(options['sleep']) if 'sleep' in options else None # type: ignore
+        sleep: Optional[float] = float(options['sleep']) if 'sleep' in options else None # type: ignore[reportArgumentType]
         clean_result: Optional[bool] = bool(options.get('clean', False))
 
         ran_request = False
@@ -442,9 +470,21 @@ def execute():
                 time.sleep(sleep)
             sleepCounter += 1
 
+            # Method logic
+            if 'methodfield' in options:
+                methodfield: Optional[str] = options.get('methodfield') # type: ignore[reportAssignmentType]
+                if methodfield and methodfield in result and len(result[methodfield]) > 0:
+                    method = result[methodfield].lower()
+                    if method not in ALLOWED_METHODS:
+                        errorMsg(f"Invalid method '{method}' specified in result")
+                        continue
+                else:
+                    # Use the default method
+                    method = options.get('method', "get") # type: ignore[reportAssignmentType]
+
             # URI logic
             if 'urifield' in options:
-                uri_field: Optional[str] = options.get('urifield') # type: ignore
+                uri_field: Optional[str] = options.get('urifield') # type: ignore[reportAssignmentType]
                 if uri_field and uri_field in result and len(result[uri_field]) > 0:
                     uri = result[uri_field]
                 else:
@@ -454,15 +494,15 @@ def execute():
                 continue
 
             # Headers logic
-            event_headers = {}
+            event_headers = CaseInsensitiveDict()
             if 'headerfield' in options and search_mode == 'streaming':
                 header_field: str = str(options['headerfield'])
                 try:
-                    event_headers = json.loads(result[header_field])
+                    event_headers = CaseInsensitiveDict(json.loads(result[header_field]))
                 except Exception:
-                    event_headers = result[header_field]
+                    event_headers = CaseInsensitiveDict(result[header_field])
 
-            headers = merge_two_dicts((base_headers if base_headers else {}), event_headers)
+            headers = CaseInsensitiveDict(merge_two_dicts((base_headers if base_headers else {}), event_headers))
             # Data logic
             data: Optional[Union[Dict[str, Any], List[Any], str, int, float, bool]] = None
             if 'data' in options:
@@ -484,14 +524,12 @@ def execute():
                     except Exception:
                         data = data_text
             
-            data_str: Optional[str] = None
-            # Handle parsed object data before applying it as a payload
-            if isinstance(data, (dict, list)):
-                data_str = json.dumps(data)
+            if isinstance(data, dict):
+                # Handle parsed object data before applying it as a payload
                 # Create the header object to apply/add to headers
                 ct_header = {
                     'Content-Type': 'application/json',
-                    'Content-Length': str(len(data))
+                    'Content-Length': len(json.dumps(data))
                 }
                 # Set the Content-Type header to application/json (if not already set)
                 if isinstance(headers, dict):
@@ -501,46 +539,62 @@ def execute():
                             headers_content_type_set = True
                     if not headers_content_type_set:
                         headers.update(ct_header)
-            else:
-                data_str = str(data) if data is not None else None
 
             # Auth logic
             auth: Optional[tuple] = (user, passwd) if user and passwd else None
 
+            # Proxy logic
+            # TODO: Add proxy logic for PROXY= and PROXY_AUTH= options
+            
             curl_result = {}
             ran_request = False
             if not uri in [None, ""]:
                 # Check the uri and quit if not HTTPS (Splunk Cloud only)
-                enforceHTTPS(uri)
+                if should_enforce_https(uri, verifyssl):
+                    enforce_https(uri)
                 # Invoke the HTTP request
-                curl_result = http_request(
-                    method,
-                    uri,
-                    data_str,
-                    verifyssl,
-                    headers=headers,
-                    timeout=timeout,
-                    cert=cert,
-                    auth=auth
-                )
-                # Set a flag so the next loop will sleep as configured
-                ran_request = True
-
+                if not dryrun:
+                    curl_result = http_request(
+                        method,
+                        uri,
+                        data,
+                        verifyssl,
+                        headers=headers,
+                        timeout=timeout,
+                        cert=cert,
+                        auth=auth
+                    )
+                    # Set a flag so the next loop will sleep as configured
+                    ran_request = True
+                else:
+                    # Dry run results - no actual response data
+                    curl_result = {
+                        'status': 'dryrun',
+                        'message': 'Dry run mode enabled, no request sent.',
+                        'url': uri,
+                    }
+                    if headers:
+                        curl_result['headers'] = headers
             # Debugging info
             if 'debug' in options and is_true(options['debug']):
                 # Add debug fields to the result only if they have values
+                auth_header = curl_result['headers'].get("Authorization")
+                if auth_header and ' ' in auth_header:
+                    auth_header_prefix, auth_header_token = auth_header.split(" ")
+                    # Mask the token in the authorization header
+                    curl_result['headers'].update({"Authorization": f"{auth_header_prefix} {auth_header_token[:4]}...{auth_header_token[-4:]}"})
                 for k, v in [
                     ('curl_method', method),
                     ('curl_uri', uri),
                     ('curl_splunkauth', splunkauth),
                     ('curl_data_payload', data),
-                    ('curl_header', headers),
+                    ('curl_header', curl_result.get('headers')),
+                    ('curl_header_response', curl_result.get('headers_response')),
                     #('user_headers', user_headers),
                     ('curl_sleep', sleep),
                     ('curl_cert', cert[0] if cert and type(cert) is tuple else None),
                     ('curl_certkey', cert[1] if cert and type(cert) is tuple and cert[1] is not None else None),
-                    ('curl_verifyssl', "Forced to True for Splunk Cloud Compatibility" if cli.isCloudInstanceType()
-                            else verifyssl)
+                    ('curl_verifyssl', should_enforce_https(uri, verifyssl)),
                 ]:
                     if v is not None:
                         result[k] = v
