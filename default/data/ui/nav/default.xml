@@ -1,0 +1,6 @@
+<nav>
+  <view name="curl_test_harness" default="true" />
+  <collection label="TA-webtools">
+    <view name="curl_test_harness" />
+  </collection>
+</nav>

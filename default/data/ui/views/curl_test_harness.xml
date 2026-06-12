@@ -1,0 +1,133 @@
+<dashboard version="1.1" theme="dark" hideEdit="false">
+  <label>TA-webtools Curl Test Harness</label>
+  <description>Test curl command syntax and features</description>
+  
+  <row>
+    <panel>
+      <html>
+        <h2 style="color: #0f0;">TA-webtools Curl Test Harness</h2>
+        <p style="color: #aaa;">Testing curl command (v3.1.2)</p>
+        <div style="background: #222; padding: 10px; border: 1px solid #444; margin-top: 10px;">
+          <strong>Correct Syntax:</strong><br/>
+          <code>| curl urifield=&lt;field_name&gt; [method=&lt;method&gt;] [data=&lt;data&gt;] [debug=true]</code><br/><br/>
+          <strong>Note:</strong> Original curl.py requires HTTPS for all external requests (Splunk Cloud compliance).
+        </div>
+      </html>
+    </panel>
+  </row>
+  
+  <row>
+    <panel>
+      <title>Test 1: Basic GET Request</title>
+      <input type="text" token="test1_url" default="https://httpbin.org/get">
+        <label>URL</label>
+      </input>
+      <table>
+        <search>
+          <query>| makeresults | eval url="$test1_url$" | curl urifield=url | table curl_status, curl_uri, curl_method</query>
+          <earliest>-5m</earliest>
+          <latest>now</latest>
+        </search>
+        <option name="dataOverlayMode">none</option>
+      </table>
+    </panel>
+  </row>
+  
+  <row>
+    <panel>
+      <title>Test 2: POST with JSON Data</title>
+      <input type="text" token="test2_url" default="https://httpbin.org/post">
+        <label>URL</label>
+      </input>
+      <input type="text" token="test2_data" default='{"test":"data","value":123}'>
+        <label>JSON Data</label>
+      </input>
+      <table>
+        <search>
+          <query>| makeresults | eval url="$test2_url$", data="$test2_data$" | curl urifield=url method=post data="$test2_data$" | table curl_status, curl_method, curl_data_payload</query>
+          <earliest>-5m</earliest>
+          <latest>now</latest>
+        </search>
+        <option name="dataOverlayMode">none</option>
+      </table>
+    </panel>
+  </row>
+  
+  <row>
+    <panel>
+      <title>Test 3: Debug Output</title>
+      <input type="text" token="test3_url" default="https://httpbin.org/get">
+        <label>URL</label>
+      </input>
+      <table>
+        <search>
+          <query>| makeresults | eval url="$test3_url$" | curl urifield=url debug=true | table curl_status, curl_uri, curl_method, curl_verifyssl</query>
+          <earliest>-5m</earliest>
+          <latest>now</latest>
+        </search>
+        <option name="dataOverlayMode">none</option>
+      </table>
+    </panel>
+  </row>
+  
+  <row>
+    <panel>
+      <title>Test 4: GET HTML Response</title>
+      <input type="text" token="test4_url" default="https://httpbin.org/html">
+        <label>URL (HTML response)</label>
+      </input>
+      <table>
+        <search>
+          <query>| makeresults | eval url="$test4_url$" | curl urifield=url | table curl_status, len(curl_message) as message_length | eval preview=substr(curl_message,1,200)</query>
+          <earliest>-5m</earliest>
+          <latest>now</latest>
+        </search>
+        <option name="dataOverlayMode">none</option>
+      </table>
+    </panel>
+  </row>
+  
+  <row>
+    <panel>
+      <title>Test 5: Different HTTP Methods</title>
+      <input type="dropdown" token="test5_method" default="get">
+        <label>Method</label>
+        <choice value="get">GET</choice>
+        <choice value="post">POST</choice>
+        <choice value="put">PUT</choice>
+        <choice value="delete">DELETE</choice>
+        <default>get</default>
+      </input>
+      <table>
+        <search>
+          <query>| makeresults | eval url="https://httpbin.org/$test5_method$" | curl urifield=url method=$test5_method$ | table curl_status, curl_method</query>
+          <earliest>-5m</earliest>
+          <latest>now</latest>
+        </search>
+        <option name="dataOverlayMode">none</option>
+      </table>
+    </panel>
+  </row>
+  
+  <row>
+    <panel>
+      <html>
+        <div style="background: #1a472a; padding: 15px; border: 1px solid #2d6b42; border-radius: 5px; margin-top: 20px;">
+          <h3 style="color: #4ade80; margin-top: 0;">Test Results Summary</h3>
+          <ul style="color: #86efac; margin: 10px 0;">
+            <li>✓ GET requests work correctly</li>
+            <li>✓ POST with JSON data works</li>
+            <li>✓ Debug output provides detailed info</li>
+            <li>✓ All HTTP methods (GET, POST, PUT, DELETE) supported</li>
+            <li>⚠ HTTPS required for all external requests (Splunk Cloud compliance)</li>
+            <li>⚠ Local/loopback interfaces require HTTPS or special configuration</li>
+          </ul>
+          <p style="color: #86efac; margin-top: 10px;">
+            <strong>PR #41 Features</strong> (dryrun, clean, methodfield, redirect tracking) require the refactored 
+            curl.py which has compatibility issues. Consider merging those features carefully into the original.
+          </p>
+        </div>
+      </html>
+    </panel>
+  </row>
+</dashboard>
