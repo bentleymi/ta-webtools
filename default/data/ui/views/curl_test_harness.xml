@@ -9,8 +9,7 @@
         <p style="color: #aaa;">Testing curl command (v3.1.2)</p>
         <div style="background: #222; padding: 10px; border: 1px solid #444; margin-top: 10px;">
           <strong>Correct Syntax:</strong><br/>
-          <code>| curl urifield=&lt;field_name&gt; [method=&lt;method&gt;] [data=&lt;data&gt;] [debug=true]</code><br/><br/>
-          <strong>Note:</strong> Original curl.py requires HTTPS for all external requests (Splunk Cloud compliance).
+          <code>| curl urifield=&lt;field_name&gt; [method=&lt;method&gt;] [data=&lt;data&gt;] [debug=true]</code>
         </div>
       </html>
     </panel>
