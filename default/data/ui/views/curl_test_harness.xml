@@ -122,10 +122,6 @@
             <li>⚠ HTTPS required for all external requests (Splunk Cloud compliance)</li>
             <li>⚠ Local/loopback interfaces require HTTPS or special configuration</li>
           </ul>
-          <p style="color: #86efac; margin-top: 10px;">
-            <strong>PR #41 Features</strong> (dryrun, clean, methodfield, redirect tracking) require the refactored 
-            curl.py which has compatibility issues. Consider merging those features carefully into the original.
-          </p>
         </div>
       </html>
     </panel>
