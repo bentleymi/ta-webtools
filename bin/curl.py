@@ -426,7 +426,7 @@ def execute():
             timeout = options.get('timeout', 60)
             # default uri to None and force https
             uri: Optional[str] = str(options['uri']) if 'uri' in options else None
-            verifyssl: bool = bool(options.get('verifyssl', True)) if not cli.isCloudInstanceType() else True
+            verifyssl: bool = bool(options.get('verifyssl', False)) if not cli.isCloudInstanceType() else True
 
             cert: Optional[tuple] = None
             # use client certificate
