@@ -18,7 +18,7 @@ logger = dcu.getLogger()
 
 # Template strings dictionary
 url_templates = {
-    "passwords": "https://%s:8089/servicesNS/-/%s/storage/passwords?output_mode=json&search=username%3D%s"
+    "passwords": "https://%s:8089/servicesNS/-/%s/storage/passwords?output_mode=json&search=username%%3D%s"
 }
 
 # Method aliases for shorthand reference
