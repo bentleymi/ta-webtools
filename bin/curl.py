@@ -450,7 +450,7 @@ def execute():
                 
                 # Get the username and password for authentication
                 url = url_templates['passwords'] % (hostname, splunkpasswdcontext, splunkpasswdname)
-                json_res = requests.get(url, verify=True, headers=headers).json()
+                json_res = requests.get(url, verify=False, headers=headers).json()
                 if len(json_res['messages']) != 0:
                    if json_res['messages'][0]['type'] != "INFO":
                        splunk.Intersplunk.generateErrorResults(f"{str(json_res['messages'])} occurred while querying URL: {url}")
