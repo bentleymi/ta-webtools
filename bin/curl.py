@@ -112,7 +112,8 @@ def parse_args() -> Dict[str, Union[str, int, float, bool, List[Any], Dict[str, 
         for arg in argv[1:]:
             result = pattern.match(arg)
             if result:
-                options[result.group(1)] = str_to_type(result.group(2))
+                key = result.group(1)
+                options[key] = result.group(2) if key == 'data' else str_to_type(result.group(2))
     return options
 
 def build_auth_headers(sessionKey=None, token=None) -> Dict[str, str]:
@@ -431,7 +432,7 @@ def execute():
             cert: Optional[tuple] = None
             # use client certificate
             if 'clientcert' in options:
-                cert: Optional[tuple] = (str(options.get('clientcert')), str(options.get('certkey')))
+                cert = (str(options['clientcert']), str(options['certkey'])) if 'certkey' in options else str(options['clientcert'])
 
             # splunkpasswdcontext variable is optional, defaults to -
             splunkpasswdcontext: str = str(options.get('splunkpasswdcontext', "-"))
@@ -661,7 +662,7 @@ def execute():
                     #('user_headers', user_headers),
                     ('curl_sleep', sleep),
                     ('curl_proxy', {k: re.sub(r'(://[^/:]+:)([^/@]+)@', r'\1********@', v) for k, v in proxies.items()} if proxies else None),
-                    ('curl_cert', cert[0] if cert and isinstance(cert, tuple) else None),
+                    ('curl_cert', (cert[0] if isinstance(cert, tuple) else cert) if cert else None),
                     ('curl_certkey', cert[1] if cert and isinstance(cert, tuple) and cert[1] is not None else None),
                     ('curl_verifyssl', should_enforce_https(uri, verifyssl)),
                 ]:

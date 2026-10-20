@@ -5,10 +5,10 @@
     "id": {
       "group": null,
       "name": "TA-webtools",
-      "version": "3.1.6"
+      "version": "3.1.7"
     },
     "author": [{"name":"Michael \"JKat54\" Bentley","email":"m@ableversity.com","company":"Ableversity Incorporated"}],
-    "releaseDate": "08/21/2026",
+    "releaseDate": "10/20/2026",
     "description": "This app adds the following custom splunk search commands:curl, openssl, testport, and urlencode.  It also adds curl and testport modular inputs."
 ,
     "classification": {
